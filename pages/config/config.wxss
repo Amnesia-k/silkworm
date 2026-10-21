@@ -1,0 +1,309 @@
+/* pages/config/config.wxss —— P05 参数配置页私有样式（配色：主蓝 #3d6df2 / 绿 #10b981 / 橙 #f59e0b / 红 #ef4444） */
+
+/* ---------------- 顶部 ---------------- */
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 22rpx;
+}
+
+/* ---------------- 龄期 / 品种选择 ---------------- */
+.pick-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 10rpx 0;
+}
+
+.pick-label {
+  width: 76rpx;
+  flex: none;
+  font-size: 24rpx;
+  color: #8b95a7;
+  line-height: 56rpx;
+}
+
+.pick-row .chip-row {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------------- 目标区间输入 ---------------- */
+.field-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.field-row {
+  width: 48%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.field-label {
+  font-size: 24rpx;
+  color: #5b6474;
+  width: 116rpx;
+  flex: none;
+}
+
+.field-input {
+  flex: 1;
+  min-width: 0;
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  background: #f7f9fc;
+  border: 1rpx solid #e3e9f2;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #1f2937;
+  text-align: center;
+}
+
+.field-unit {
+  width: 62rpx;
+  flex: none;
+  margin-left: 8rpx;
+  font-size: 22rpx;
+  color: #8b95a7;
+}
+
+.preview-box {
+  background: rgba(61, 109, 242, 0.06);
+  border-radius: 14rpx;
+  padding: 16rpx 18rpx;
+  margin-top: 6rpx;
+}
+
+.preview-line {
+  display: block;
+  font-size: 22rpx;
+  color: #3d6df2;
+  line-height: 1.6;
+}
+
+.err-box {
+  margin-top: 12rpx;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 14rpx;
+  padding: 14rpx 18rpx;
+  font-size: 24rpx;
+  color: #ef4444;
+}
+
+/* ---------------- 控制参数（温度 / 湿度 / 保护 三组，可折叠） ---------------- */
+.pgroup {
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.pgroup:last-child {
+  border-bottom: none;
+}
+
+.pgroup-head {
+  display: flex;
+  align-items: center;
+  padding: 22rpx 0;
+}
+
+.pgroup-main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.pgroup-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.pgroup-count {
+  margin-left: 12rpx;
+  font-size: 20rpx;
+  color: #a8b1c0;
+}
+
+.pgroup-main .badge {
+  margin-left: 12rpx;
+}
+
+.pgroup-arrow {
+  font-size: 22rpx;
+  color: #8b95a7;
+  padding-left: 12rpx;
+}
+
+.pgroup-arrow-on {
+  color: #3d6df2;
+}
+
+.pgroup-sum {
+  font-size: 21rpx;
+  color: #8b95a7;
+  line-height: 34rpx;
+  padding: 0 0 20rpx;
+}
+
+.pgroup-body {
+  padding-bottom: 6rpx;
+}
+
+.pgroup-body .param:last-child {
+  border-bottom: none;
+  padding-bottom: 12rpx;
+}
+
+.param {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.param:last-child {
+  border-bottom: none;
+  padding-bottom: 4rpx;
+}
+
+.param-head {
+  display: flex;
+  align-items: center;
+}
+
+.param-label {
+  font-size: 26rpx;
+  color: #1f2937;
+}
+
+.param-flag {
+  margin-left: 12rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  font-size: 18rpx;
+  line-height: 30rpx;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.param-value {
+  margin-left: auto;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.param-unit {
+  font-size: 20rpx;
+  font-weight: 400;
+  color: #8b95a7;
+  margin-left: 4rpx;
+}
+
+.param-slider {
+  margin: 4rpx 8rpx 0;
+}
+
+.param-foot {
+  display: flex;
+  align-items: center;
+  font-size: 20rpx;
+  color: #a8b1c0;
+}
+
+.param-side {
+  margin-left: auto;
+}
+
+/* ---------------- 变更原因 ---------------- */
+.note-input {
+  width: 100%;
+  height: 160rpx;
+  box-sizing: border-box;
+  padding: 18rpx;
+  background: #f7f9fc;
+  border: 1rpx solid #e3e9f2;
+  border-radius: 14rpx;
+  font-size: 26rpx;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.note-foot {
+  margin-top: 12rpx;
+}
+
+.note-value {
+  max-width: 420rpx;
+  text-align: right;
+}
+
+/* ---------------- 历史版本 ---------------- */
+.name-badge {
+  margin-left: 12rpx;
+}
+
+.btn-mini {
+  display: inline-block;
+  padding: 8rpx 22rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(61, 109, 242, 0.4);
+  background: #ffffff;
+  color: #3d6df2;
+  font-size: 22rpx;
+  line-height: 36rpx;
+}
+
+/* ---------------- 安全联锁（只读） ---------------- */
+.lk {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.lk:last-child {
+  border-bottom: none;
+  padding-bottom: 4rpx;
+}
+
+.lk-head {
+  display: flex;
+  align-items: center;
+}
+
+.lk-code {
+  background: #ef4444;
+}
+
+.lk-name {
+  margin-left: 12rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.lk-line {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #5b6474;
+  line-height: 1.6;
+}
+
+.lk-key {
+  display: inline-block;
+  width: 62rpx;
+  color: #8b95a7;
+}
+
+/* ---------------- 页脚 ---------------- */
+.foot-tip {
+  margin: 20rpx 24rpx;
+}
+
+/* ---------------- 下发按钮（卡内） ---------------- */
+.apply-btn {
+  width: 100%;
+  margin-top: 20rpx;
+}

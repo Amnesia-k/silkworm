@@ -1,0 +1,179 @@
+<!-- 加载态：骨架屏（barn-bar 在 page 之内，随 page 一起隐藏） -->
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page" wx:if="{{!loading}}">
+  <barn-bar from="/pages/machine/machine" />
+
+  <!-- 概要 -->
+  <view class="card">
+    <view class="card-header">
+      <view>
+        <view class="card-title">机械化设备</view>
+        <view class="card-sub">空调加热 · 排气扇换气 · 投叶漏斗 · 抓取机 · 码垛机</view>
+      </view>
+      <view class="card-more" bindtap="goControl">环境控制 ›</view>
+    </view>
+
+    <view class="mini-grid">
+      <view class="mini-tile">
+        <text class="mini-num">{{summary.on}}/{{summary.total}}</text>
+        <text class="mini-cap">运行中</text>
+      </view>
+      <view class="mini-tile {{summary.outOfPreset ? 'warn' : ''}}">
+        <text class="mini-num">{{summary.outOfPreset}}</text>
+        <text class="mini-cap">参数越界</text>
+      </view>
+      <view class="mini-tile {{summary.pending ? 'warn' : ''}}">
+        <text class="mini-num">{{summary.pending}}</text>
+        <text class="mini-cap">待裁定病蚕</text>
+      </view>
+    </view>
+
+    <view wx:if="{{canManual.needToken}}" class="token-row">
+      <input class="token-input" value="{{tokenInput}}" bindinput="onTokenInput" placeholder="操作员填写 ACTION_TOKEN" />
+    </view>
+
+    <view class="tip">每台设备都有预设工作范围，实际参数低于下限或超出上限即为「需人为干涉」。</view>
+  </view>
+
+  <!-- 病蚕识别记录：后端接口 GET /barns/{barn}/diseased -->
+  <view class="card">
+    <view class="card-header">
+      <view>
+        <view class="card-title">病蚕识别记录</view>
+        <view class="card-sub">放行后由服务端自动下发夹取{{clampSyncText !== '--' ? ' · 更新 ' + clampSyncText : ''}}</view>
+      </view>
+      <view class="card-more" bindtap="onRefreshClamp">刷新 ›</view>
+    </view>
+
+    <view wx:if="{{!clampOk}}" class="api-warn">
+      <text class="api-warn-text">接口异常：{{clampMsg}}</text>
+      <text class="api-warn-act" bindtap="goMine">去配置 ›</text>
+    </view>
+
+    <view wx:if="{{diseased.length === 0}}" class="empty">{{clampOk ? '暂无待裁定病蚕' : '接口未连通，暂无数据'}}</view>
+
+    <view wx:for="{{diseased}}" wx:key="id" class="dz-row">
+      <view wx:if="{{item.image}}" class="dz-thumb-wrap">
+        <image class="dz-thumb" src="{{item.image}}" mode="aspectFill" lazy-load data-id="{{item.id}}" data-src="{{item.image}}" bindtap="onPreviewImage" />
+      </view>
+      <view class="dz-main">
+        <view class="dz-pos">
+          <text>{{item.display}}</text>
+          <text class="dz-count">疑似 {{item.count}} 头</text>
+        </view>
+        <view class="dz-meta">{{item.timeText}} · 置信度 {{item.confText}}{{item.agoText ? ' · ' + item.agoText : ''}}</view>
+        <view wx:if="{{item.causeText}}" class="dz-meta">{{item.causeText}}</view>
+        <view wx:if="{{item.envText}}" class="dz-env">{{item.envText}}</view>
+        <view class="dz-badges">
+          <text class="badge {{item.statusTone}}">{{item.statusText}}</text>
+          <text class="badge {{item.clampTone}}">{{item.clampText}}</text>
+          <text class="badge badge-gray">{{item.gradeText}}</text>
+        </view>
+      </view>
+      <view wx:if="{{item.canConfirm}}" class="dz-side">
+        <view class="btn-mini btn-yes {{confirmingId === item.id ? 'btn-busy' : ''}}" data-id="{{item.id}}" bindtap="onConfirmYes">{{confirmingId === item.id ? '下发中' : '放行'}}</view>
+        <view class="btn-mini btn-no" data-id="{{item.id}}" bindtap="onConfirmNo">忽略</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 夹取作业：后端接口 GET /barns/{barn}/clamp/jobs -->
+  <view wx:if="{{jobs.length}}" class="card">
+    <view class="card-header">
+      <view>
+        <view class="card-title">夹取作业</view>
+        <view class="card-sub">只有「已放到位」才代表机械真的把箔放到传送带上</view>
+      </view>
+    </view>
+    <view wx:for="{{jobs}}" wx:key="id" class="job-item">
+      <view class="job-head">
+        <text class="job-pos">{{item.display}}</text>
+        <text class="badge {{item.statusTone}}">{{item.statusText}}</text>
+      </view>
+      <view class="job-line">{{item.sourceText}} · {{item.startedText}}{{item.durationText ? ' · 用时 ' + item.durationText : ''}}</view>
+      <view wx:if="{{item.reason}}" class="job-line">{{item.reason}}</view>
+      <view class="job-foot"><text class="badge {{item.placedTone}}">{{item.placedText}}</text></view>
+    </view>
+  </view>
+
+  <!-- 机械列表 -->
+  <view wx:for="{{list}}" wx:key="id" class="card">
+    <view class="card-header">
+      <view>
+        <view class="card-title">{{item.name}}<text class="dev-kind">{{item.kindName}}</text></view>
+        <view class="card-sub">{{item.model}}</view>
+      </view>
+      <view class="badge {{item.on ? 'badge-green' : 'badge-gray'}}">{{item.stateText}}</view>
+    </view>
+
+    <view class="m-spec">{{item.spec}}</view>
+    <view class="kv-row"><text class="kv-label">运行时长</text><text class="kv-value">{{item.runtimeText}}</text></view>
+    <view class="kv-row"><text class="kv-label">今日启停</text><text class="kv-value">{{item.switchesToday}} 次 · 最近 {{item.lastSwitchText}}</text></view>
+    <view wx:if="{{item.lastCycleText !== '--'}}" class="kv-row"><text class="kv-label">最近作业</text><text class="kv-value">{{item.lastCycleText}}</text></view>
+
+    <!-- 工作参数与预设范围 -->
+    <view class="m-sec">
+      <view class="m-sec-title">工作参数 · 预设范围</view>
+      <view wx:for="{{item.params}}" wx:for-item="p" wx:key="key" class="p-row" data-m="{{item.id}}" data-k="{{p.key}}" bindtap="onEditParam">
+        <view class="p-main">
+          <view class="p-label">{{p.label}}</view>
+          <view class="p-preset">预设 {{p.presetText}}</view>
+        </view>
+        <view class="p-side">
+          <view class="p-val {{p.ok ? '' : 'p-out'}}">{{p.text}}</view>
+          <view class="badge {{p.ok ? 'badge-gray' : 'badge-orange'}}">{{p.ok ? '范围内' : (p.dir === 'low' ? '不够' : '超出')}}</view>
+        </view>
+      </view>
+      <view class="tip {{item.needHuman ? 'tip-warn' : ''}}">{{item.outText}}{{item.needHuman ? '，需人为干涉修正' : ''}}</view>
+    </view>
+
+    <!-- 参数变更记录 -->
+    <view wx:if="{{item.paramLog.length}}" class="m-sec">
+      <view class="m-sec-title">参数变更记录</view>
+      <view wx:for="{{item.paramLog}}" wx:for-item="l" wx:key="at" class="log-row">
+        <text class="log-time">{{l.timeText}}</text>
+        <text class="log-text">{{l.text}}</text>
+      </view>
+    </view>
+
+    <view class="btn-row">
+      <view class="{{item.on ? 'btn-danger' : 'btn-primary'}} btn-flex" data-id="{{item.id}}" bindtap="onToggle">{{item.on ? '停止' : '启动'}}{{item.name}}</view>
+    </view>
+  </view>
+
+  <view class="foot-tip">管理员可直接操作，操作员需管理员签发的令牌；安全锁定期间仅排气扇可运行。病蚕放行后由服务端自动下发夹取，坐标范围为 1~3 列、1 排、1~4 层。</view>
+</view>
+
+<!-- 参数编辑弹层 -->
+<view wx:if="{{edit}}" class="mask" bindtap="onCloseEdit"></view>
+<view wx:if="{{edit}}" class="sheet">
+  <view class="sheet-title">{{edit.name}} · {{edit.label}}</view>
+  <view class="sheet-sub">当前 {{edit.value}} {{edit.unit}} · 硬件允许 {{edit.min}} ~ {{edit.max}} {{edit.unit}} · 预设 {{edit.presetLo}} ~ {{edit.presetHi}} {{edit.unit}}</view>
+
+  <view class="sheet-field">
+    <text class="sheet-label">新的工作参数（{{edit.unit}}）</text>
+    <input class="sheet-input" type="digit" value="{{editInput}}" bindinput="onEditInput" placeholder="输入数值" />
+  </view>
+  <view class="sheet-field">
+    <text class="sheet-label">人工干涉原因（超出预设范围时必填）</text>
+    <input class="sheet-input" value="{{editNote}}" bindinput="onNoteInput" placeholder="如：5 龄蚕食量大，按技术员要求加量" />
+  </view>
+
+  <view wx:if="{{canConfig}}" class="sheet-field">
+    <text class="sheet-label">预设工作范围（仅管理员可调）</text>
+    <view class="sheet-double">
+      <input class="sheet-input half" type="digit" value="{{editLo}}" bindinput="onLoInput" placeholder="下限" />
+      <input class="sheet-input half" type="digit" value="{{editHi}}" bindinput="onHiInput" placeholder="上限" />
+    </view>
+  </view>
+
+  <view class="sheet-tip">修改会记录「谁、何时、改前改后、原因」，并写入审计日志。</view>
+  <view class="sheet-btns">
+    <view class="btn-ghost" bindtap="onCloseEdit">取消</view>
+    <view class="btn-primary" bindtap="onSaveParam">保存参数</view>
+  </view>
+  <view wx:if="{{canConfig}}" class="sheet-btns">
+    <view class="btn-ghost btn-flex" bindtap="onSavePreset">仅修改预设范围</view>
+  </view>
+</view>

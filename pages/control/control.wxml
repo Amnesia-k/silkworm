@@ -1,0 +1,194 @@
+<!-- pages/control/control.wxml —— P04 手动控制（规格书 12.1 P04 / 7.2 / 7.5 / 7.6 / 7.7 / 11.6） -->
+<barn-bar from="/pages/control/control" />
+
+<!-- 加载态：骨架屏 -->
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page-body" wx:if="{{!loading}}">
+
+  <!-- ============ 模式卡 ============ -->
+  <view class="card" wx:if="{{st}}">
+    <view class="card-header">
+      <text class="card-title">当前控制模式</text>
+      <text class="card-sub">{{st.barn}} / {{st.zone}}</text>
+      <text class="badge mode-{{st.modeTone}} card-right">{{st.modeName}}</text>
+    </view>
+    <block wx:if="{{modeInfo}}">
+      <view class="mode-behavior">{{modeInfo.behavior}}</view>
+      <view class="kv-row">
+        <text class="kv-label">进入条件</text>
+        <text class="kv-value">{{modeInfo.enter}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">退出条件</text>
+        <text class="kv-value">{{modeInfo.exit}}</text>
+      </view>
+    </block>
+    <view class="manual-count" wx:if="{{st.mode === 'manual'}}">
+      <text>手动模式剩余 </text>
+      <text class="mono text-warn">{{manualLeftText}}</text>
+      <text class="text-sub">（超过 30 min 自动退回自动调控）</text>
+    </view>
+  </view>
+
+  <!-- ============ 安全锁定提示卡 ============ -->
+  <view class="card lock-card" wx:if="{{interlock}}">
+    <view class="card-header">
+      <text class="card-title text-danger">⛔ 安全锁定生效（SAFE_LOCK）</text>
+      <text class="badge badge-red card-right">{{interlock.code}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">联锁项</text>
+      <text class="kv-value text-danger">{{interlock.name}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">触发原因</text>
+      <text class="kv-value">{{interlock.reason}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">发生时间</text>
+      <text class="kv-value">{{interlockAtText}}</text>
+    </view>
+    <view class="tip">危险负载已强制断电，须管理员现场确认后解除。</view>
+    <view class="btn-danger btn-full {{permUnlock.ok ? '' : 'btn-disabled'}}" bindtap="onUnlock">解除安全锁定</view>
+    <view class="unlock-box" wx:if="{{showUnlock}}">
+      <input class="memo-input" value="{{unlockReason}}" bindinput="onUnlockReason" placeholder="请填写解除原因（必填，写入审计日志）" />
+      <view class="btn-row">
+        <view class="btn-ghost" bindtap="onUnlockCancel">取消</view>
+        <view class="btn-primary" bindtap="onUnlockSubmit">提交解除</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 设备控制卡（4 台） ============ -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">设备控制</text>
+      <text class="card-sub">共 {{devices.length}} 台</text>
+    </view>
+    <view class="tip">雾化片与风扇不可同时开启；加热片与风扇同时开启最多 5 min。</view>
+    <view class="divider"></view>
+
+    <view class="list-item" wx:for="{{devices}}" wx:key="id">
+      <view class="list-main" bindtap="goDevice" data-id="{{item.id}}">
+        <view class="list-name">
+          <view class="dot {{item.on ? 'dot-green' : 'dot-gray'}}"></view>
+          {{item.name}}
+          <text class="tag-solid dev-kind">{{item.kindName}}</text>
+        </view>
+        <view class="list-meta">{{item.id}} · {{item.model}}</view>
+        <view class="list-meta">
+          <text class="{{item.on ? 'text-ok' : 'text-sub'}}">{{item.stateText}}</text>
+          <text class="text-sub"> · 累计运行 {{item.runtimeText}} · 今日启停 {{item.switchesToday}} 次</text>
+        </view>
+        <view class="list-meta text-sub">最近启停 {{item.lastSwitchText}}</view>
+        <view class="list-meta text-danger" wx:if="{{item.locked}}">🔒 {{item.lockText}}</view>
+        <view class="list-meta text-danger" wx:if="{{item.faultCode}}">故障码 {{item.faultCode}}</view>
+      </view>
+      <view class="list-tail">
+        <view class="sw-btn {{item.on ? 'sw-on' : ''}} {{item.disabled ? 'btn-disabled' : ''}}" bindtap="onToggleDevice" data-id="{{item.id}}">{{item.actionText}}</view>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{devices.length === 0}}">当前蚕房暂无可控设备</view>
+    <view class="tip">点设备名看详情；开关需二次确认。</view>
+  </view>
+
+  <!-- ============ 机械化设备入口（空调/排气扇/投叶漏斗/抓取机/码垛机） ============ -->
+  <view class="card" bindtap="goMachine">
+    <view class="card-header">
+      <text class="card-title">机械化设备</text>
+      <text class="card-more">进入 ›</text>
+    </view>
+    <view class="tip">空调 / 排气扇 / 投叶漏斗 / 抓取机 / 码垛机，各有预设工作范围，超范围需人工修正。</view>
+    <view wx:if="{{mSummary}}">
+      <view class="kv-row"><text class="kv-label">运行中</text><text class="kv-value">{{mSummary.on}} / {{mSummary.total}} 台</text></view>
+      <view class="kv-row"><text class="kv-label">参数越界</text><text class="kv-value {{mSummary.outOfPreset > 0 ? 'text-danger' : ''}}">{{mSummary.outOfPreset}} 项</text></view>
+      <view class="kv-row"><text class="kv-label">待裁定病蚕</text><text class="kv-value {{mSummary.pending > 0 ? 'text-warn' : ''}}">{{mSummary.pending}} 箔</text></view>
+      <view class="kv-row"><text class="kv-label">需人为干涉</text><text class="kv-value {{mSummary.needHuman > 0 ? 'text-danger' : 'text-ok'}}">{{mSummary.needHuman}} 项</text></view>
+    </view>
+  </view>
+
+  <!-- ============ 审批令牌区 ============ -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">审批令牌 ACTION_TOKEN</text>
+      <text class="card-sub">5 min 内单次有效</text>
+    </view>
+    <view class="tip">操作员手动开关须携带管理员签发的令牌；维护模式免令牌。</view>
+    <view class="token-issued" wx:if="{{lastTokenId}}">本次签发令牌：<text class="mono text-ok">{{lastTokenId}}</text></view>
+    <view class="divider"></view>
+
+    <!-- 管理员：签发令牌 -->
+    <block wx:if="{{isAdmin}}">
+      <view class="section-title">签发令牌（管理员）</view>
+      <view class="chip-row">
+        <view class="chip {{issueTarget === item.id ? 'chip-on' : ''}}" wx:for="{{tokenTargets}}" wx:key="id" bindtap="onIssueTarget" data-id="{{item.id}}">{{item.name}}</view>
+      </view>
+      <input class="memo-input" value="{{issueMemo}}" bindinput="onIssueMemo" placeholder="备注（可选，写入审计日志）" />
+      <view class="btn-primary btn-full" bindtap="onIssueToken">签发令牌</view>
+    </block>
+
+    <!-- 非管理员：填写令牌 -->
+    <block wx:else>
+      <view class="section-title">填写令牌（操作员）</view>
+      <input class="memo-input" value="{{tokenInput}}" bindinput="onTokenInput" placeholder="粘贴管理员签发的 ACTION_TOKEN" />
+      <view class="tip">令牌 5 min 内单次有效，且限设备与动作。</view>
+    </block>
+
+    <view class="divider"></view>
+
+    <!-- 令牌列表 -->
+    <view class="section-title">令牌列表（{{tokens.length}}）</view>
+    <view class="list-item" wx:for="{{tokens}}" wx:key="id">
+      <view class="list-main">
+        <view class="list-name mono">{{item.id}}</view>
+        <view class="list-meta">适用 {{item.barn}} / {{item.zone}} · 目标 {{item.target}} · 动作 {{item.action}}</view>
+        <view class="list-meta">签发 {{item.issuedText}} · 到期 {{item.expireText}}</view>
+        <view class="list-meta">签发人 {{item.issuedBy}}</view>
+      </view>
+      <view class="list-tail">
+        <view class="badge {{item.statusText === '有效' ? 'badge-green' : (item.statusText === '已过期' ? 'badge-gray' : 'badge-blue')}}">{{item.statusText}}</view>
+        <view class="list-meta">剩余 {{item.remainText}}</view>
+        <view class="revoke-btn" wx:if="{{isAdmin && !item.used}}" bindtap="onRevokeToken" data-id="{{item.id}}">撤销</view>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{tokens.length === 0}}">暂无令牌，管理员签发后操作员方可执行手动开关</view>
+  </view>
+
+  <!-- ============ 模式操作按钮 ============ -->
+  <view class="card" wx:if="{{st}}">
+    <view class="card-header">
+      <text class="card-title">模式操作</text>
+      <text class="card-sub">当前 {{st.modeName}}</text>
+    </view>
+    <input class="memo-input" wx:if="{{permMaint.ok}}" value="{{maintMemo}}" bindinput="onMaintMemo" placeholder="维护备注（可选，写入审计日志）" />
+    <view class="tip" wx:if="{{!permMaint.ok}}">{{permMaint.reason}}，无法切换维护模式。</view>
+    <view class="btn-row">
+      <view class="btn-ghost {{st.mode === 'manual' ? '' : 'btn-disabled'}}" bindtap="onExitManual">退出手动模式</view>
+      <view class="btn-primary {{permMaint.ok ? '' : 'btn-disabled'}}" bindtap="onToggleMaint">{{st.mode === 'maint' ? '退出维护模式' : '进入维护模式'}}</view>
+    </view>
+    <view class="tip">手动开关、解除锁定、模式切换均需二次确认。</view>
+  </view>
+
+  <!-- ============ 安全联锁说明卡 ============ -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">安全联锁说明</text>
+      <text class="card-more" bindtap="onToggleIl">{{ilOpen ? '收起' : '展开 S1~S6'}}</text>
+    </view>
+    <block wx:if="{{ilOpen}}">
+    <view class="il-row" wx:for="{{interlocks}}" wx:key="code">
+      <view class="il-head">
+        <text class="il-code {{item.danger ? 'il-danger' : ''}}">{{item.code}}</text>
+        <text class="il-name {{item.danger ? 'text-danger' : ''}}">{{item.name}}</text>
+        <text class="badge badge-red il-tag" wx:if="{{item.danger}}">进入 SAFE_LOCK</text>
+      </view>
+      <view class="tip">触发条件：{{item.trigger}}</view>
+      <view class="tip">联锁动作：{{item.action}}</view>
+      <view class="tip">解除条件：{{item.release}}</view>
+    </view>
+    </block>
+    <view class="tip" wx:else>展开查看每条联锁的触发条件、动作与解除条件。</view>
+  </view>
+
+</view>

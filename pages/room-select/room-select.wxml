@@ -1,0 +1,60 @@
+<view class="hero">
+  <view class="hero-title">选择蚕房</view>
+  <view class="hero-sub">{{heroSub}}</view>
+  <view class="hero-sub">系统时钟 {{simText}}（模拟演示）</view>
+</view>
+
+<view class="page-body">
+  <view class="section-title">共 {{list.length}} 栋蚕房 · 点击卡片进入</view>
+
+  <view class="card barn-card" wx:for="{{list}}" wx:key="barn" data-barn="{{item.barn}}" bindtap="onPick">
+    <view class="card-header">
+      <text class="card-title">{{item.name}}</text>
+      <text class="badge mode-{{item.modeTone}}">{{item.modeName}}</text>
+      <text class="badge badge-red" wx:if="{{item.criticalCount > 0}}">紧急 {{item.criticalCount}}</text>
+      <text class="current-tag" wx:if="{{item.isCurrent}}">上次选择</text>
+    </view>
+
+    <view class="barn-meta">
+      <text class="mono">{{item.barn}}</text>
+      <text class="sep">/</text>
+      <text class="mono">{{item.zone}}</text>
+      <text class="sep">·</text>
+      <text>{{item.area}}㎡</text>
+      <text class="sep">·</text>
+      <text>{{item.varietyName}} · {{item.instarName}}</text>
+    </view>
+
+    <view class="barn-metrics">
+      <view class="bm">
+        <text class="bm-value {{item.tempOut}}">{{item.tempText}}</text>
+        <text class="bm-unit">℃</text>
+      </view>
+      <view class="bm">
+        <text class="bm-value {{item.humiOut}}">{{item.humiText}}</text>
+        <text class="bm-unit">%RH</text>
+      </view>
+      <view class="bm bm-right">
+        <text class="badge badge-{{item.outTone}}">{{item.outText}}</text>
+      </view>
+    </view>
+
+    <view class="barn-target">目标区间 {{item.targetText}}</view>
+
+    <view class="divider"></view>
+
+    <view class="barn-foot">
+      <text class="foot-item">
+        <text class="dot {{item.online ? 'dot-green' : 'dot-red'}}"></text>{{item.online ? '设备在线' : '设备离线'}}
+      </text>
+      <text class="foot-item">执行器 {{item.deviceText}}</text>
+      <text class="foot-item">告警 {{item.alarmCount}}</text>
+      <text class="foot-item">WiFi {{item.wifiText}}</text>
+    </view>
+  </view>
+
+  <view class="tip reset-tip">演示环境：数据由本机模拟规则引擎生成。</view>
+  <view class="btn-row">
+    <button class="btn-ghost" bindtap="onReset">重置演示数据</button>
+  </view>
+</view>

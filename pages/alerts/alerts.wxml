@@ -1,0 +1,114 @@
+<!-- pages/alerts/alerts.wxml —— P03 告警列表 -->
+<!-- 加载态：骨架屏（barn-bar 在 page-body 之内，随 page-body 一起隐藏） -->
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page-body" wx:if="{{!loading}}">
+  <!-- 顶部当前蚕房信息条 -->
+  <barn-bar from="/pages/alerts/alerts" />
+
+  <!-- 统计区 -->
+  <view class="card stat-card">
+    <view class="card-header">
+      <text class="card-title">告警概览</text>
+      <text class="card-sub">{{allBarns ? '全部蚕房' : barnName}}</text>
+    </view>
+    <view class="stat-grid">
+      <view class="stat-tile">
+        <view class="stat-value">{{stat.active}}</view>
+        <view class="stat-label">活跃告警</view>
+      </view>
+      <view class="stat-tile">
+        <view class="stat-value text-danger">{{stat.critical}}</view>
+        <view class="stat-label">紧急</view>
+      </view>
+      <view class="stat-tile">
+        <view class="stat-value text-warn">{{stat.warn}}</view>
+        <view class="stat-label">警告</view>
+      </view>
+      <view class="stat-tile">
+        <view class="stat-value text-primary">{{stat.info}}</view>
+        <view class="stat-label">提示</view>
+      </view>
+    </view>
+    <view class="tip stat-note">累计 {{stat.total}} 条 · 未处理 {{stat.unacked}} · 已确认 {{stat.acked}} · 已恢复 {{stat.cleared}}</view>
+  </view>
+
+  <!-- 筛选 + 规格书 13.3 抑制去重说明 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">筛选</text>
+      <text class="card-sub">共 {{list.length}} 条</text>
+    </view>
+    <view class="chip-row">
+      <view
+        wx:for="{{levelOptions}}"
+        wx:key="key"
+        class="chip {{level === item.key ? 'chip-on' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onLevelTap"
+      >{{item.label}}</view>
+    </view>
+    <view class="chip-row filter-gap">
+      <view
+        wx:for="{{statusOptions}}"
+        wx:key="key"
+        class="chip {{status === item.key ? 'chip-on' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onStatusTap"
+      >{{item.label}}</view>
+    </view>
+    <view class="divider"></view>
+    <view class="tip dedup-tip">同一设备 {{dedupWindow}} min 内的重复告警自动合并（去重键 {{dedupKey}}）</view>
+  </view>
+
+  <!-- 告警列表 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">告警列表</text>
+      <text class="card-sub">{{allBarns ? '全部蚕房' : '当前蚕房'}}</text>
+    </view>
+
+    <view wx:if="{{list.length === 0}}" class="empty">当前筛选条件下暂无告警</view>
+
+    <view
+      wx:for="{{list}}"
+      wx:key="id"
+      class="alarm-item"
+      data-id="{{item.id}}"
+      bindtap="onOpenAlarm"
+    >
+      <view class="alarm-bar" style="background: {{item.levelColor}};"></view>
+      <view class="alarm-body">
+        <view class="alarm-top">
+          <text class="badge {{item.levelBadge}}">{{item.levelName}}</text>
+          <text class="alarm-code mono">{{item.code}}</text>
+          <text class="badge {{item.statusBadge}} alarm-status">{{item.statusText}}</text>
+        </view>
+        <view class="alarm-text">{{item.text}}</view>
+        <view class="alarm-meta">
+          <text class="mono">{{item.deviceId}}</text>
+          <text class="alarm-dot">·</text>
+          <text>{{item.barnName}}</text>
+          <text class="alarm-dot">·</text>
+          <text>{{item.agoText}}</text>
+          <text class="alarm-dot">·</text>
+          <text>{{item.timeText}}</text>
+        </view>
+      </view>
+      <view
+        wx:if="{{item.active && !item.acked && !item.cleared}}"
+        class="alarm-ack {{canAck ? '' : 'btn-disabled'}}"
+        data-id="{{item.id}}"
+        catchtap="onAckOne"
+      >确认</view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="btn-row">
+    <view class="btn-ghost {{canAck ? '' : 'btn-disabled'}}" bindtap="onAckAll">批量确认</view>
+    <view class="btn-primary" bindtap="onToggleScope">{{allBarns ? '仅看当前蚕房' : '全部蚕房'}}</view>
+  </view>
+
+  <view class="tip foot-tip">升级规则：提示只记录；警告滞留 30 min 未确认升级为紧急；紧急无免打扰。</view>
+</view>

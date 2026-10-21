@@ -1,0 +1,166 @@
+<barn-bar from="/pages/report/report" />
+
+<!-- 加载态：骨架屏（字段多，占位 4 行） -->
+<skeleton wx:if="{{loading}}" rows="{{4}}" />
+
+<view class="page-body" wx:if="{{!loading}}">
+  <!-- 统计时间段 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">统计时间段</text>
+      <text class="card-sub">{{aggText}}</text>
+    </view>
+    <view class="chip-row">
+      <text class="chip {{dateKey === item.key ? 'chip-on' : ''}}" wx:for="{{chips}}" wx:key="key" data-k="{{item.key}}" bindtap="onDateTap">{{item.label}}</text>
+      <picker mode="date" value="{{customDate}}" bindchange="onDatePicker">
+        <text class="chip {{dateKey === 'custom' ? 'chip-on' : ''}}">自定义…</text>
+      </picker>
+    </view>
+    <view class="window-text">统计日期 {{dateText}}（00:00 ~ 24:00）</view>
+    <view class="window-text" wx:if="{{report}}">目标区间 {{rangeText}} · 采样点 {{report.samples}} 个</view>
+    <view class="window-text">模拟时钟 {{simClockText}}</view>
+  </view>
+
+  <!-- 温湿度统计卡片 -->
+  <view class="card" wx:if="{{report}}">
+    <view class="card-header">
+      <text class="card-title">温湿度统计</text>
+      <text class="card-sub">{{report.instarName}} / {{report.varietyName}}</text>
+    </view>
+    <view class="stat-grid">
+      <view class="stat-tile half">
+        <view class="stat-value text-primary">{{report.tempAvg}}<text class="unit">℃</text></view>
+        <view class="stat-label">温度均值</view>
+      </view>
+      <view class="stat-tile half">
+        <view class="stat-value text-ok">{{report.humiAvg}}<text class="unit">%RH</text></view>
+        <view class="stat-label">湿度均值</view>
+      </view>
+    </view>
+    <view class="divider"></view>
+    <view class="kv-grid">
+      <view class="kv-item">
+        <view class="kv-item-label">温度最高</view>
+        <view class="kv-item-value">{{report.tempMax}}<text class="kv-item-unit">℃</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">温度最低</view>
+        <view class="kv-item-value">{{report.tempMin}}<text class="kv-item-unit">℃</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">湿度最高</view>
+        <view class="kv-item-value">{{report.humiMax}}<text class="kv-item-unit">%RH</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">湿度最低</view>
+        <view class="kv-item-value">{{report.humiMin}}<text class="kv-item-unit">%RH</text></view>
+      </view>
+    </view>
+    <view class="divider"></view>
+    <view class="kv-row">
+      <text class="kv-label">温度累计越限时长</text>
+      <text class="kv-value {{report.tempOutMin > 0 ? 'text-danger' : ''}}">{{report.tempOutText}}（{{report.tempOutMin}} min）</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">湿度累计越限时长</text>
+      <text class="kv-value {{report.humiOutMin > 0 ? 'text-danger' : ''}}">{{report.humiOutText}}（{{report.humiOutMin}} min）</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">综合越限占比</text>
+      <text class="kv-value">{{report.outRate}} %</text>
+    </view>
+  </view>
+
+  <!-- 逐小时越限时长柱状图 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">逐小时越限时长</text>
+      <text class="card-sub">单位 min（小时聚合）</text>
+    </view>
+    <canvas type="2d" id="outBars" class="chart-bars"></canvas>
+    <view class="empty" wx:if="{{chartEmpty}}">当日暂无采样数据</view>
+  </view>
+
+  <!-- 逐小时均值曲线 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">逐小时均值曲线</text>
+      <text class="card-sub">小时均值</text>
+    </view>
+    <canvas type="2d" id="hourEnv" class="chart"></canvas>
+    <view class="legend">
+      <text class="legend-item"><text class="lg-dot lg-blue"></text>小时均温℃</text>
+      <text class="legend-item"><text class="lg-dot lg-green"></text>小时均湿%RH</text>
+      <text class="legend-item"><text class="lg-band"></text>目标区间</text>
+      <text class="legend-item"><text class="lg-dot lg-red"></text>温度越限点</text>
+    </view>
+    <view class="empty" wx:if="{{chartEmpty}}">当日暂无采样数据</view>
+  </view>
+
+  <!-- 设备启停次数统计 -->
+  <view class="card" wx:if="{{switchRows.length > 0}}">
+    <view class="card-header">
+      <text class="card-title">设备启停次数</text>
+      <text class="card-sub">当日合计 {{switchTotal}} 次</text>
+    </view>
+    <view class="sw-item" wx:for="{{switchRows}}" wx:key="id">
+      <view class="sw-line">
+        <text class="sw-name">{{item.name}}</text>
+        <text class="sw-kind">{{item.kindName}} · {{item.id}}</text>
+        <text class="sw-count">{{item.count}} 次</text>
+      </view>
+      <view class="bar">
+        <view class="bar-fill" style="width:{{item.pct}}%; background:#3d6df2;"></view>
+      </view>
+    </view>
+    <view class="tip">启停次数为当日累计，超过 20 次触发 AL08 提示告警。</view>
+  </view>
+
+  <!-- 告警统计记录 -->
+  <view class="card" wx:if="{{report}}">
+    <view class="card-header">
+      <text class="card-title">告警统计</text>
+      <text class="card-sub">当日合计 {{report.alarmTotal}} 条</text>
+    </view>
+    <view class="stat-grid">
+      <view class="stat-tile" wx:for="{{alarmRows}}" wx:key="key">
+        <view class="stat-value text-{{item.tone}}">{{item.count}}</view>
+        <view class="stat-label">{{item.name}}</view>
+      </view>
+      <view class="stat-tile">
+        <view class="stat-value">{{report.alarmCritical + report.alarmWarn + report.alarmInfo}}</view>
+        <view class="stat-label">分级合计</view>
+      </view>
+    </view>
+    <view class="divider" wx:if="{{alarmList.length > 0}}"></view>
+    <view class="list-item" wx:for="{{alarmList}}" wx:key="id">
+      <view class="list-main">
+        <view class="list-name">{{item.defName}}</view>
+        <view class="list-meta">{{item.timeText}} · {{item.levelName}}</view>
+      </view>
+      <view class="list-tail">
+        <text class="badge badge-{{item.tone}}">{{item.statusText}}</text>
+      </view>
+    </view>
+    <view class="tip" wx:if="{{alarmList.length === 0}}">当日无告警记录。</view>
+  </view>
+
+  <!-- 报表操作 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">报表操作</text>
+      <text class="card-sub">操作员及以上</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">当前角色</text>
+      <text class="kv-value">{{roleName}} · {{canReport ? '可导出 / 分享' : '无报表权限'}}</text>
+    </view>
+    <view class="btn-row">
+      <button class="{{canReport ? 'btn-ghost' : 'btn-ghost btn-disabled'}}" bindtap="onExportMd">导出 Markdown</button>
+      <button wx:if="{{canReport}}" class="btn-primary" open-type="share">分享</button>
+      <button wx:else class="btn-primary btn-disabled" bindtap="onShareDenied">分享</button>
+    </view>
+    <view class="tip">导出后写入用户目录并复制到剪贴板，可直接粘贴成 .md 文件。</view>
+  </view>
+
+</view>

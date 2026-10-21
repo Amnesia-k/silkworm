@@ -1,0 +1,22 @@
+/* pages/device-detail/device-detail.wxss —— 仅补充全局样式未覆盖的新类 */
+
+.card-right { margin-left: auto; }
+
+.env-chart {
+  width: 100%;
+  height: 420rpx;
+  margin-top: 12rpx;
+}
+
+.alarm-level {
+  margin-right: 12rpx;
+}
+
+.memo-input {
+  margin: 12rpx 0;
+  padding: 18rpx 24rpx;
+  background: #f4f6f9;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #2c3542;
+}

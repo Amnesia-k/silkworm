@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "Agent 问答",
+  "usingComponents": {
+    "barn-bar": "/components/barn-bar/barn-bar"
+  }
+}

@@ -1,0 +1,127 @@
+<barn-bar from="/pages/history/history" />
+
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page-body" wx:if="{{!loading}}">
+  <!-- 时间段：一行 chip + 当前窗口，自定义收进面板 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">时间段</text>
+      <text class="card-sub">{{granText}}</text>
+    </view>
+    <view class="chip-row">
+      <text class="chip {{rangeKey === item.key ? 'chip-on' : ''}}" wx:for="{{ranges}}" wx:key="key" data-k="{{item.key}}" bindtap="onRangeTap">{{item.label}}</text>
+      <text class="chip {{rangeKey === 'custom' ? 'chip-on' : ''}}" data-k="custom" bindtap="onRangeTap">自定义…</text>
+    </view>
+
+    <view class="window-text">{{fromText}} ~ {{toText}}</view>
+
+    <view class="custom-panel" wx:if="{{showCustom}}">
+      <view class="cp-row">
+        <text class="cp-label">开始</text>
+        <picker mode="date" value="{{custom.startDate}}" data-k="startDate" bindchange="onPicker">
+          <view class="picker-box">{{custom.startDate}}</view>
+        </picker>
+        <picker mode="time" value="{{custom.startTime}}" data-k="startTime" bindchange="onPicker">
+          <view class="picker-box">{{custom.startTime}}</view>
+        </picker>
+      </view>
+      <view class="cp-row">
+        <text class="cp-label">结束</text>
+        <picker mode="date" value="{{custom.endDate}}" data-k="endDate" bindchange="onPicker">
+          <view class="picker-box">{{custom.endDate}}</view>
+        </picker>
+        <picker mode="time" value="{{custom.endTime}}" data-k="endTime" bindchange="onPicker">
+          <view class="picker-box">{{custom.endTime}}</view>
+        </picker>
+      </view>
+      <view class="btn-row">
+        <button class="btn-ghost" bindtap="onCloseCustom">取消</button>
+        <button class="btn-primary" bindtap="onApplyCustom">应用时间段</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 曲线：进入视口后才画出；标注只留最高/最低，另给平均温度 -->
+  <view class="card chart-card" id="envChartWrap">
+    <view class="card-header">
+      <text class="card-title">温湿度曲线</text>
+      <text class="card-sub {{stats.outPoints > 0 ? 'text-danger' : ''}}">累计越限 {{stats.outText}}</text>
+      <text class="card-more" bindtap="onExport">导出 CSV</text>
+    </view>
+
+    <view class="stat-rows" wx:if="{{stats}}">
+      <view class="sr-row">
+        <text class="sr-tag">温度</text>
+        <text class="sr-cell">最高 <text class="sr-num">{{stats.tempMax}}</text> ℃</text>
+        <text class="sr-cell">最低 <text class="sr-num">{{stats.tempMin}}</text> ℃</text>
+        <text class="sr-cell">平均 <text class="sr-num">{{stats.tempAvg}}</text> ℃</text>
+      </view>
+      <view class="sr-row">
+        <text class="sr-tag">湿度</text>
+        <text class="sr-cell">最高 <text class="sr-num">{{stats.humiMax}}</text> %</text>
+        <text class="sr-cell">最低 <text class="sr-num">{{stats.humiMin}}</text> %</text>
+        <text class="sr-cell">平均 <text class="sr-num">{{stats.humiAvg}}</text> %</text>
+      </view>
+    </view>
+
+    <view class="chart-box" id="envChartBox"
+      catchtouchstart="onChartTouchStart" catchtouchmove="onChartTouchMove" catchtouchend="onChartTouchEnd"
+      catchtouchcancel="onChartTouchEnd">
+      <canvas type="2d" id="envChart" class="chart"></canvas>
+    </view>
+    <view class="chart-bar">
+      <text class="cb-hint">双指缩放 · 单指拖动 · 双击复位</text>
+      <text class="cb-zoom" wx:if="{{zoomed}}">{{zoomText}}</text>
+      <text class="cb-reset" wx:if="{{zoomed}}" bindtap="onResetZoom">重置</text>
+    </view>
+    <view class="legend">
+      <text class="legend-item"><text class="lg-dot lg-blue"></text>温度 ℃</text>
+      <text class="legend-item"><text class="lg-dot lg-green"></text>湿度 %RH</text>
+      <text class="legend-item"><text class="lg-band"></text>目标区间</text>
+      <text class="legend-item"><text class="lg-dash"></text>平均温度</text>
+    </view>
+    <view class="empty" wx:if="{{chartEmpty}}">该时间段无采样数据</view>
+  </view>
+
+  <!-- 越限区间 -->
+  <view class="card" wx:if="{{segments.length > 0}}">
+    <view class="card-header">
+      <text class="card-title">越限区间</text>
+      <text class="card-sub">最近 {{segments.length}} 段</text>
+    </view>
+    <view class="seg" wx:for="{{segments}}" wx:key="fromText">
+      <view class="seg-head">
+        <text class="badge badge-red">越限</text>
+        <text class="seg-time">{{item.fromText}} ~ {{item.toText}}</text>
+        <text class="seg-dur">{{item.minText}}</text>
+      </view>
+      <view class="seg-body">温度 {{item.tempText}} · 湿度 {{item.humiText}}</view>
+    </view>
+  </view>
+
+  <!-- 采样点明细（默认折叠） -->
+  <view class="card" wx:if="{{samples.length > 0}}">
+    <view class="card-header">
+      <text class="card-title">采样点明细</text>
+      <text class="card-sub">最近 {{samples.length}} 点</text>
+      <text class="card-more" bindtap="onToggleSamples">{{showSamples ? '收起' : '展开'}}</text>
+    </view>
+    <block wx:if="{{showSamples}}">
+      <view class="sample-row sample-head">
+        <text class="s-col s-time">时间</text>
+        <text class="s-col">温度℃</text>
+        <text class="s-col">湿度%RH</text>
+        <text class="s-col">状态</text>
+      </view>
+      <view class="sample-row" wx:for="{{samples}}" wx:key="ts">
+        <text class="s-col s-time">{{item.timeText}}</text>
+        <text class="s-col">{{item.tempText}}</text>
+        <text class="s-col">{{item.humiText}}</text>
+        <text class="s-col"><text class="badge badge-{{item.tone}}">{{item.flagText}}</text></text>
+      </view>
+    </block>
+  </view>
+
+  <view class="tip">越限按目标区间判定；长时间段自动按小时聚合。</view>
+</view>

@@ -1,0 +1,127 @@
+<view class="page-body agent-page">
+
+  <barn-bar from="/pages/agent/agent" />
+
+  <!-- ===================== 能力声明 ===================== -->
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">Agent 能力声明</view>
+      <view class="card-more" bindtap="toggleTools">{{toolsOpen ? '收起工具清单' : '查看 10 项工具'}}</view>
+    </view>
+    <view class="card-sub">只读建议 · 不下发控制指令</view>
+    <view class="declare-list">
+      <view class="declare-row">
+        <view class="badge badge-blue">只读</view>
+        <text class="declare-text">只能查询遥测、历史、设备状态、告警与报表，不写任何硬件寄存器</text>
+      </view>
+      <view class="declare-row">
+        <view class="badge badge-red">禁止下发</view>
+        <text class="declare-text">禁止下发硬件控制指令，不参与实时闭环；执行动作需人工确认</text>
+      </view>
+      <view class="declare-row">
+        <view class="badge badge-orange">建议</view>
+        <text class="declare-text">输出文字建议 / 巡检报告，动作建议一律转手动控制页由人工二次确认</text>
+      </view>
+      <view class="declare-row">
+        <view class="badge badge-gray">审计</view>
+        <text class="declare-text">提问与工具调用写入审计日志，不可修改</text>
+      </view>
+    </view>
+
+    <view wx:if="{{toolsOpen}}" class="tool-catalog">
+      <view class="divider"></view>
+      <view class="section-title">可用工具（spec.AGENT_TOOLS）</view>
+      <view class="tool-cat-item" wx:for="{{tools}}" wx:key="name">
+        <view class="tool-cat-name">{{item.name}}</view>
+        <view class="tool-cat-use">{{item.use}}</view>
+        <view class="tool-cat-meta">
+          <text class="tag-solid">{{item.perm}}</text>
+          <text class="tool-cat-timeout">超时上限 {{item.timeout}}</text>
+        </view>
+      </view>
+      <view class="tip">{{toolNames}}</view>
+    </view>
+  </view>
+
+  <!-- ===================== 对话流 ===================== -->
+  <view class="section-title">对话</view>
+
+  <view wx:if="{{!messages.length}}" class="empty">暂无对话，点击下方快捷问题开始</view>
+
+  <block wx:for="{{messages}}" wx:key="id" wx:for-item="msg">
+    <view class="msg-row {{msg.role === 'user' ? 'msg-row-user' : 'msg-row-agent'}}">
+      <view class="bubble {{msg.role === 'user' ? 'bubble-user' : 'bubble-agent'}}">
+        <text class="bubble-text">{{msg.text}}</text>
+      </view>
+    </view>
+
+    <!-- Agent 消息附加：动作建议 / 工具调用过程 / 数据来源 -->
+    <view wx:if="{{msg.role === 'agent'}}" class="msg-extra">
+
+      <view wx:if="{{msg.actions && msg.actions.length}}" class="action-box">
+        <view class="section-title">动作建议（需人工确认，Agent 不执行）</view>
+        <view class="action-item" wx:for="{{msg.actions}}" wx:key="key" wx:for-item="act">
+          <view class="action-head">
+            <view class="badge badge-orange">建议动作</view>
+            <text class="action-title">{{act.action}}</text>
+          </view>
+          <view class="kv-row">
+            <text class="kv-label">目标设备</text>
+            <text class="kv-value mono">{{act.target}}</text>
+          </view>
+          <view class="kv-row">
+            <text class="kv-label">依据</text>
+            <text class="kv-value">{{act.reason}}</text>
+          </view>
+          <view class="kv-row">
+            <text class="kv-label">风险</text>
+            <text class="kv-value text-warn">{{act.risk}}</text>
+          </view>
+          <view class="btn-row">
+            <view class="btn-primary btn-mini" bindtap="onGoControl">前往手动控制</view>
+            <view class="btn-ghost btn-mini" data-target="{{act.target}}" data-reason="{{act.reason}}" bindtap="onIssueToken">申请审批令牌</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{msg.tools && msg.tools.length}}" class="tools-box">
+        <view class="tools-toggle" data-index="{{index}}" bindtap="onToggleTools">
+          {{msg.showTools ? '收起工具调用过程' : '查看工具调用过程'}}
+        </view>
+        <view wx:if="{{msg.showTools}}" class="tool-list">
+          <view class="tool-item" wx:for="{{msg.tools}}" wx:key="key" wx:for-item="tl">
+            <view class="tool-head">
+              <text class="tool-name mono">{{tl.name}}</text>
+              <text class="tool-cost">{{tl.costMs}} ms / 上限 {{tl.timeout}}</text>
+            </view>
+            <view class="tool-use">{{tl.use}}</view>
+            <view class="tool-args mono">入参 {{tl.args}}</view>
+            <view class="tool-result mono">结果 {{tl.result}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{msg.sources && msg.sources.length}}" class="source-line">
+        <text class="source-label">数据来源：</text>
+        <text class="source-item" wx:for="{{msg.sources}}" wx:key="key" wx:for-item="src">{{src.tool}} · {{src.scope}} · {{src.time}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view id="chat-bottom" class="chat-bottom"></view>
+
+  <!-- ===================== 快捷问题 ===================== -->
+  <view class="divider"></view>
+  <view class="section-title">快捷问题</view>
+  <view class="chip-row">
+    <view class="chip" wx:for="{{quickList}}" wx:key="*this" data-q="{{item}}" bindtap="onQuick">{{item}}</view>
+  </view>
+  <view class="tip">限流 {{rateLimit}} 次/分钟（本分钟已用 {{rateCount}} 次）</view>
+  <view class="tip">提问与工具调用写入审计日志；Agent 不参与实时闭环。</view>
+</view>
+
+<!-- ===================== 输入栏 ===================== -->
+<view class="input-bar">
+  <input class="input-box" value="{{input}}" placeholder="输入问题，例如：为什么湿度偏高？" placeholder-class="input-ph" confirm-type="send" bindinput="onInput" bindconfirm="onSend" />
+  <view class="btn-primary btn-send {{agentPerm.ok ? '' : 'btn-disabled'}}" bindtap="onSend">发送</view>
+</view>

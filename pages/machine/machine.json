@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "barn-bar": "/components/barn-bar/barn-bar",
+    "skeleton": "/components/skeleton/skeleton"
+  },
+  "navigationBarTitleText": "机械化设备",
+  "enablePullDownRefresh": false
+}

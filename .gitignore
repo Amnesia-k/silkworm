@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+
+# 构建产物（HBuilderX 编译输出，需本地重新生成）
+uni-app/unpackage/
+unpackage/
+dist/
+
+# 临时校验目录
+.tmp-verify/
+.tmp-spec/
+
+# 打包产物
+*.zip
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.log

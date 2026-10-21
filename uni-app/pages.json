@@ -1,0 +1,127 @@
+{
+  "easycom": {
+    "autoscan": true
+  },
+  "pages": [
+    {
+      "path": "pages/room-select/room-select",
+      "style": {
+        "navigationBarTitleText": "选择蚕房"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "实时看板",
+        "enablePullDownRefresh": true,
+        "backgroundTextStyle": "light"
+      }
+    },
+    {
+      "path": "pages/history/history",
+      "style": {
+        "navigationBarTitleText": "历史曲线",
+        "enablePullDownRefresh": true,
+        "backgroundTextStyle": "light"
+      }
+    },
+    {
+      "path": "pages/alerts/alerts",
+      "style": {
+        "navigationBarTitleText": "告警列表"
+      }
+    },
+    {
+      "path": "pages/control/control",
+      "style": {
+        "navigationBarTitleText": "手动控制"
+      }
+    },
+    {
+      "path": "pages/machine/machine",
+      "style": {
+        "navigationBarTitleText": "机械化设备"
+      }
+    },
+    {
+      "path": "pages/mine/mine",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/config/config",
+      "style": {
+        "navigationBarTitleText": "参数配置"
+      }
+    },
+    {
+      "path": "pages/report/report",
+      "style": {
+        "navigationBarTitleText": "日报报表"
+      }
+    },
+    {
+      "path": "pages/agent/agent",
+      "style": {
+        "navigationBarTitleText": "Agent 问答"
+      }
+    },
+    {
+      "path": "pages/device-detail/device-detail",
+      "style": {
+        "navigationBarTitleText": "设备详情"
+      }
+    },
+    {
+      "path": "pages/alarm-detail/alarm-detail",
+      "style": {
+        "navigationBarTitleText": "告警详情"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "蚕房环境调控系统",
+    "navigationBarBackgroundColor": "#3d6df2",
+    "backgroundColor": "#f4f6f9"
+  },
+  "tabBar": {
+    "color": "#8b95a7",
+    "selectedColor": "#3d6df2",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "看板",
+        "iconPath": "static/tab/dashboard.png",
+        "selectedIconPath": "static/tab/dashboard-on.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "曲线",
+        "iconPath": "static/tab/chart.png",
+        "selectedIconPath": "static/tab/chart-on.png"
+      },
+      {
+        "pagePath": "pages/alerts/alerts",
+        "text": "告警",
+        "iconPath": "static/tab/alarm.png",
+        "selectedIconPath": "static/tab/alarm-on.png"
+      },
+      {
+        "pagePath": "pages/control/control",
+        "text": "控制",
+        "iconPath": "static/tab/control.png",
+        "selectedIconPath": "static/tab/control-on.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "static/tab/mine.png",
+        "selectedIconPath": "static/tab/mine-on.png"
+      }
+    ]
+  }
+}

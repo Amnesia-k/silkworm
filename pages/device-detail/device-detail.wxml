@@ -1,0 +1,148 @@
+<!-- pages/device-detail/device-detail.wxml —— P01 下钻页：设备详情 -->
+<barn-bar from="/pages/device-detail/device-detail" />
+
+<view class="page-body">
+
+  <!-- ============ 设备信息卡 ============ -->
+  <view class="card" wx:if="{{info}}">
+    <view class="card-header">
+      <text class="card-title">{{info.name}}</text>
+      <text class="badge badge-blue card-right">{{info.kindName}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">设备编号</text>
+      <text class="kv-value mono">{{info.id}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">型号</text>
+      <text class="kv-value">{{info.model}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">规格</text>
+      <text class="kv-value">{{info.spec}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">所属蚕房 / 控制区</text>
+      <text class="kv-value">{{info.barn}} / {{info.zone}}</text>
+    </view>
+    <view class="kv-row" wx:if="{{info.group}}">
+      <text class="kv-label">设备组</text>
+      <text class="kv-value">{{info.group}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">在线状态</text>
+      <text class="kv-value {{info.online ? 'text-ok' : 'text-danger'}}">{{info.onlineText}}</text>
+    </view>
+  </view>
+  <view class="card" wx:else>
+    <view class="empty">未找到设备（{{deviceId}}）</view>
+  </view>
+
+  <!-- ============ BOM 清单条目卡（规格书 4.1） ============ -->
+  <view class="card" wx:if="{{bom}}">
+    <view class="card-header">
+      <text class="card-title">{{bom.name}}</text>
+      <text class="card-sub">BOM 清单</text>
+      <text class="badge badge-gray card-right">{{bom.code}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">配置型号</text>
+      <text class="kv-value">{{bom.model}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">数量</text>
+      <text class="kv-value">{{bom.qty}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">技术规格</text>
+      <text class="kv-value">{{bom.spec}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">安装位置</text>
+      <text class="kv-value">{{bom.pos}}</text>
+    </view>
+    <view class="kv-row" wx:if="{{bom.device}}">
+      <text class="kv-label">对应下发设备</text>
+      <text class="kv-value mono">{{bom.device}}</text>
+    </view>
+  </view>
+
+  <!-- ============ 实时运行卡 ============ -->
+  <view class="card" wx:if="{{dev}}">
+    <view class="card-header">
+      <text class="card-title">实时运行</text>
+      <text class="badge {{dev.on ? 'badge-green' : 'badge-gray'}} card-right">{{dev.stateText}}</text>
+    </view>
+    <view class="list-meta">
+      <view class="dot {{dev.on ? 'dot-green' : 'dot-gray'}}"></view>
+      <text class="{{dev.on ? 'text-ok' : 'text-sub'}}">{{dev.stateText}}</text>
+      <text class="text-sub"> · 今日启停 {{dev.switchesToday}} 次</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">累计运行时长</text>
+      <text class="kv-value">{{dev.runtimeText}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">最近一次启停</text>
+      <text class="kv-value">{{dev.lastSwitchText}}</text>
+    </view>
+    <view class="kv-row" wx:if="{{dev.locked}}">
+      <text class="kv-label">联锁状态</text>
+      <text class="kv-value text-danger">🔒 {{dev.lockText}}</text>
+    </view>
+    <view class="kv-row" wx:if="{{dev.faultCode}}">
+      <text class="kv-label">故障码</text>
+      <text class="kv-value text-danger">{{dev.faultCode}}</text>
+    </view>
+    <view class="tip" wx:if="{{!dev.canSwitch}}">当前状态不允许手动控制（安全锁定 / 离线 / 传感器失效 / 联锁）。</view>
+  </view>
+
+  <!-- ============ 近 6 小时环境曲线 ============ -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">近 6 小时环境曲线</text>
+      <text class="card-sub">{{seriesCount}} 点 · 分钟聚合</text>
+    </view>
+    <canvas type="2d" id="envChart" class="env-chart"></canvas>
+    <view class="tip">蓝线 温度 ℃ ｜ 绿线 湿度 %RH ｜ 绿色带 目标区间 ｜ 灰虚线 平均温度</view>
+  </view>
+
+  <!-- ============ 相关告警卡 ============ -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">相关告警</text>
+      <text class="card-sub">最近 {{alarms.length}} 条</text>
+    </view>
+    <view class="list-item" wx:for="{{alarms}}" wx:key="id">
+      <view class="list-main">
+        <view class="list-name">
+          <text class="badge badge-{{item.level === 'critical' ? 'red' : (item.level === 'warn' ? 'orange' : 'blue')}} alarm-level">{{item.levelName}}</text>
+          {{item.defName || item.code}}
+        </view>
+        <view class="list-meta">{{item.text}}</view>
+        <view class="list-meta text-sub">{{item.timeText}} · {{item.agoText}}</view>
+      </view>
+      <view class="list-tail">
+        <text class="badge badge-{{item.statusTone}}">{{item.statusText}}</text>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{alarms.length === 0}}">该设备近期无告警记录</view>
+  </view>
+
+  <!-- ============ 快捷操作 ============ -->
+  <view class="card" wx:if="{{dev}}">
+    <view class="card-header">
+      <text class="card-title">快捷操作</text>
+      <text class="card-sub">{{info ? info.name : deviceId}}</text>
+    </view>
+    <input class="memo-input" wx:if="{{permManual.needToken}}" value="{{tokenInput}}" bindinput="onTokenInput" placeholder="粘贴管理员签发的 ACTION_TOKEN" />
+    <view class="tip" wx:if="{{permManual.needToken}}">操作员手动开关需携带管理员签发的令牌（5 min 内单次有效）。</view>
+    <view class="tip" wx:if="{{!permManual.ok}}">{{permManual.reason}}，无法执行手动控制。</view>
+    <view class="btn-row">
+      <view class="btn-primary {{(permManual.ok && dev.canSwitch) ? '' : 'btn-disabled'}}" bindtap="onToggle">{{dev.actionText}}{{dev.name}}</view>
+      <view class="btn-ghost" bindtap="goBack">返回手动控制</view>
+    </view>
+    <view class="tip">开关需二次确认，成功后进入手动模式并倒计时 30 min。</view>
+  </view>
+
+</view>

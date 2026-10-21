@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "实时看板",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light",
+  "usingComponents": {
+    "barn-bar": "/components/barn-bar/barn-bar",
+    "skeleton": "/components/skeleton/skeleton"
+  }
+}

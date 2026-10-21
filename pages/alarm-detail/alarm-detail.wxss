@@ -1,0 +1,90 @@
+/* pages/alarm-detail/alarm-detail.wxss —— 告警详情补充样式（其余用 app.wxss 全局类） */
+
+.status-tail {
+  margin-left: auto;
+}
+
+.detail-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.5;
+  margin: 4rpx 0 8rpx;
+}
+
+/* 规格书长文本（触发/恢复条件）：不挤压、右对齐换行 */
+.def-value {
+  flex: 1;
+  margin-left: 24rpx;
+  text-align: right;
+  font-weight: 400;
+  font-size: 24rpx;
+  color: #5b6474;
+  line-height: 1.5;
+}
+
+.tip-label {
+  font-size: 24rpx;
+  color: #8b95a7;
+  margin-bottom: 8rpx;
+}
+
+.advice-box {
+  background: #f7f9fc;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 26rpx;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+/* ---------------- 告警清单 ---------------- */
+.cat-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16rpx 12rpx;
+  border-radius: 12rpx;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.cat-item:last-child {
+  border-bottom: none;
+}
+
+.cat-current {
+  background: rgba(61, 109, 242, 0.08);
+}
+
+.cat-left {
+  flex: none;
+  width: 168rpx;
+}
+
+.cat-code {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-right: 10rpx;
+}
+
+.cat-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cat-name {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.cat-trigger {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 4rpx;
+  line-height: 1.45;
+}
+
+.inner-row {
+  margin: 20rpx 0 0;
+}

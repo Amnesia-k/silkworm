@@ -1,0 +1,265 @@
+.env-main {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 8rpx;
+}
+
+.env-item {
+  margin-right: 48rpx;
+}
+
+.env-state {
+  margin-right: 0;
+  margin-left: auto;
+  text-align: right;
+}
+
+.env-value {
+  font-size: 64rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #1f2937;
+}
+
+.env-unit {
+  font-size: 24rpx;
+  color: #8b95a7;
+  margin-left: 6rpx;
+}
+
+.env-label {
+  display: block;
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 8rpx;
+}
+
+.env-state .env-label {
+  margin-top: 10rpx;
+}
+
+.out-list {
+  margin-top: 12rpx;
+  background: rgba(239, 68, 68, 0.06);
+  border-radius: 12rpx;
+  padding: 12rpx 16rpx;
+}
+
+.out-item {
+  font-size: 22rpx;
+  color: #ef4444;
+  line-height: 1.7;
+}
+
+.dev-row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.dev-row:last-child {
+  border-bottom: none;
+}
+
+.dev-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6rpx;
+}
+
+.dev-name {
+  font-size: 28rpx;
+  color: #1f2937;
+}
+
+.dev-meta {
+  display: block;
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 4rpx;
+}
+
+.env-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.env-upd {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  color: #a8b1c0;
+}
+
+.env-foot {
+  margin-top: 14rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx solid #f2f5fa;
+  font-size: 21rpx;
+  color: #8b95a7;
+  line-height: 1.5;
+}
+
+.env-line {
+  margin-top: 14rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #f2f5fa;
+}
+
+/* 曲线：放大 + 圆角底色，做成页面视觉重心 */
+.chart-card {
+  padding-bottom: 20rpx;
+}
+
+.chart {
+  width: 100%;
+  height: 500rpx;
+}
+
+/* 曲线下方一行统计（最高 / 最低 / 平均 / 越限），替代原来的一堆小字 */
+.chart-stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 4rpx 0 6rpx;
+  font-size: 21rpx;
+  color: #8b95a7;
+}
+
+.cs-item {
+  margin-right: 26rpx;
+}
+
+.cs-num {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 2rpx;
+}
+
+/* 三格速览 */
+.mini-grid {
+  display: flex;
+  margin: 0 24rpx;
+}
+
+.mini-tile {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 22rpx 8rpx;
+  margin-right: 14rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(31, 41, 55, 0.04);
+}
+
+.mini-tile:last-child {
+  margin-right: 0;
+}
+
+.mini-num {
+  display: block;
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.mini-cap {
+  display: block;
+  font-size: 21rpx;
+  color: #8b95a7;
+  margin-top: 6rpx;
+}
+
+.dev-kind {
+  font-size: 21rpx;
+  color: #a8b1c0;
+  margin-left: 10rpx;
+  margin-right: auto;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: #8b95a7;
+}
+
+.legend-item {
+  margin-right: 24rpx;
+}
+
+.lg-dot {
+  display: inline-block;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  margin-right: 6rpx;
+}
+
+.lg-blue { background: #3d6df2; }
+.lg-green { background: #10b981; }
+.lg-red { background: #ef4444; }
+
+.lg-band {
+  display: inline-block;
+  width: 22rpx;
+  height: 12rpx;
+  border-radius: 3rpx;
+  background: rgba(16, 185, 129, 0.35);
+  margin-right: 6rpx;
+}
+
+.lg-dash {
+  display: inline-block;
+  width: 22rpx;
+  height: 0;
+  border-top: 2rpx dashed #b8c1d1;
+  margin-right: 6rpx;
+  vertical-align: middle;
+}
+
+.alarm-row {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.alarm-row:last-child {
+  border-bottom: none;
+}
+
+.alarm-head {
+  display: flex;
+  align-items: center;
+}
+
+.alarm-code {
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  color: #5b6474;
+}
+
+.alarm-time {
+  margin-left: auto;
+  font-size: 20rpx;
+  color: #a8b1c0;
+}
+
+.alarm-text {
+  font-size: 26rpx;
+  color: #1f2937;
+  margin-top: 8rpx;
+  line-height: 1.6;
+}
+
+.alarm-src {
+  font-size: 20rpx;
+  color: #a8b1c0;
+  margin-top: 6rpx;
+}
+
+.foot-tip {
+  margin: 20rpx 24rpx;
+}

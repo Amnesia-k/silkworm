@@ -1,0 +1,111 @@
+<!-- pages/alarm-detail/alarm-detail.wxml —— 告警详情 -->
+<view class="page-body">
+  <!-- 正常：找到告警 -->
+  <block wx:if="{{alarm}}">
+    <!-- 告警基本信息 -->
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title mono">{{alarm.code}}</text>
+        <text class="badge {{levelBadge}}">{{alarm.levelName}}</text>
+        <text class="badge {{statusBadge}} status-tail">{{alarm.statusText}}</text>
+      </view>
+      <view class="detail-text">{{alarm.text}}</view>
+      <view class="divider"></view>
+      <view class="kv-row">
+        <text class="kv-label">来源设备</text>
+        <text class="kv-value mono">{{alarm.deviceId}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">所属蚕房</text>
+        <text class="kv-value">{{barn.name}}（{{barn.barn}} / {{barn.zone}}）</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">发生时间</text>
+        <text class="kv-value">{{alarm.timeText}} · {{alarm.agoText}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">ISO8601</text>
+        <text class="kv-value mono">{{alarm.isoText}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">当前状态</text>
+        <text class="kv-value">{{alarm.statusText}}</text>
+      </view>
+      <view class="kv-row" wx:if="{{alarm.acked}}">
+        <text class="kv-label">确认人</text>
+        <text class="kv-value">{{alarm.ackBy}}</text>
+      </view>
+      <view class="kv-row" wx:if="{{clearedText}}">
+        <text class="kv-label">恢复时间</text>
+        <text class="kv-value">{{clearedText}}</text>
+      </view>
+    </view>
+
+    <!-- 规格书定义（13.1 分级 + 13.2 清单） -->
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">分级与清单</text>
+        <text class="card-sub">告警清单</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">告警名称</text>
+        <text class="kv-value">{{alarm.defName}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">触发条件</text>
+        <text class="kv-value def-value">{{alarm.defTrigger}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">恢复条件</text>
+        <text class="kv-value def-value">{{alarm.defClear}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">通知渠道</text>
+        <text class="kv-value">{{alarm.levelChannel}}</text>
+      </view>
+      <view class="kv-row">
+        <text class="kv-label">响应时限</text>
+        <text class="kv-value">{{alarm.levelResponse}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="tip-label">处置建议</view>
+      <view class="advice-box">{{alarm.advice}}</view>
+    </view>
+
+    <!-- 告警清单 AL01~AL08，当前这条高亮 -->
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">告警清单</text>
+        <text class="card-sub">AL01 ~ AL08</text>
+      </view>
+      <view wx:for="{{catalog}}" wx:key="code" class="cat-item {{item.current ? 'cat-current' : ''}}">
+        <view class="cat-left">
+          <text class="cat-code mono">{{item.code}}</text>
+          <text class="badge {{item.levelBadge}}">{{item.levelName}}</text>
+        </view>
+        <view class="cat-body">
+          <view class="cat-name">{{item.name}}</view>
+          <view class="cat-trigger">{{item.trigger}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="btn-row">
+      <view class="btn-primary {{canAck ? '' : 'btn-disabled'}}" bindtap="onAck">确认告警</view>
+    </view>
+    <view class="btn-row">
+      <view class="btn-ghost" bindtap="onGoDashboard">查看该蚕房看板</view>
+      <view class="btn-ghost" bindtap="onGoControl">前往手动控制</view>
+    </view>
+  </block>
+
+  <!-- 异常：找不到该告警 -->
+  <view wx:if="{{!alarm}}" class="card">
+    <view class="empty">未找到该告警，可能已被清除或编号无效</view>
+    <view class="tip">id：{{id || '（空）'}}</view>
+    <view class="btn-row inner-row">
+      <view class="btn-ghost" bindtap="onBack">返回告警列表</view>
+    </view>
+  </view>
+</view>

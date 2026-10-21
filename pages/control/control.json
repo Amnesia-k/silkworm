@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "手动控制",
+  "usingComponents": {
+    "barn-bar": "/components/barn-bar/barn-bar",
+    "skeleton": "/components/skeleton/skeleton"
+  }
+}

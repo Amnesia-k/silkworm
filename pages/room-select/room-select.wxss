@@ -1,0 +1,75 @@
+.barn-card {
+  position: relative;
+}
+
+.current-tag {
+  margin-left: auto;
+  font-size: 20rpx;
+  color: #3d6df2;
+  background: rgba(61, 109, 242, 0.1);
+  border-radius: 999rpx;
+  padding: 2rpx 14rpx;
+}
+
+.barn-meta {
+  font-size: 24rpx;
+  color: #5b6474;
+  margin-top: 4rpx;
+}
+
+.barn-meta .sep {
+  margin: 0 10rpx;
+  color: #c3cbd8;
+}
+
+.barn-metrics {
+  display: flex;
+  align-items: flex-end;
+  margin-top: 18rpx;
+}
+
+.bm {
+  display: flex;
+  align-items: flex-end;
+  margin-right: 36rpx;
+}
+
+.bm-right {
+  margin-right: 0;
+  margin-left: auto;
+  align-items: center;
+}
+
+.bm-value {
+  font-size: 52rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #1f2937;
+}
+
+.bm-unit {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-left: 6rpx;
+}
+
+.barn-target {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 10rpx;
+}
+
+.barn-foot {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 22rpx;
+  color: #8b95a7;
+}
+
+.foot-item {
+  margin-right: 24rpx;
+}
+
+.reset-tip {
+  margin: 10rpx 24rpx 0;
+}

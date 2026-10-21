@@ -1,0 +1,191 @@
+/* pages/mine/mine.wxss —— 仅补充全局样式（app.wxss）没有的个人中心专用类 */
+
+.mine-page {
+  padding-bottom: 40rpx;
+}
+
+/* ---------------- 用户与角色 ---------------- */
+.user-row {
+  display: flex;
+  align-items: center;
+  padding: 6rpx 0 14rpx;
+}
+
+.user-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3d6df2, #6f95ff);
+  color: #ffffff;
+  font-size: 22rpx;
+  line-height: 88rpx;
+  text-align: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.user-main {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.user-desc {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #8b95a7;
+  line-height: 30rpx;
+}
+
+/* ---------------- 当前蚕房 ---------------- */
+.barn-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.barn-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2d3748;
+  margin-right: 14rpx;
+}
+
+.barn-row .badge {
+  margin-right: 10rpx;
+}
+
+/* ---------------- 功能入口 ---------------- */
+.entry-code {
+  font-size: 20rpx;
+  color: #3d6df2;
+  background: rgba(61, 109, 242, 0.08);
+  border-radius: 8rpx;
+  padding: 2rpx 8rpx;
+  margin-left: 8rpx;
+}
+
+.arrow {
+  margin-left: 10rpx;
+  font-size: 30rpx;
+  color: #c4ccd8;
+}
+
+/* ---------------- 审计日志 ---------------- */
+.audit-item {
+  padding: 14rpx 0;
+  border-top: 1rpx solid #eef2f8;
+}
+
+.audit-item:first-child {
+  border-top: none;
+}
+
+.audit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.audit-time {
+  font-size: 22rpx;
+  color: #8b95a7;
+}
+
+.audit-body {
+  display: flex;
+  align-items: baseline;
+  margin-top: 6rpx;
+}
+
+.audit-action {
+  font-size: 26rpx;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.audit-target {
+  margin-left: 10rpx;
+  font-size: 22rpx;
+  color: #3d6df2;
+}
+
+.audit-memo,
+.audit-token {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #8b95a7;
+  line-height: 30rpx;
+}
+
+.audit-token {
+  color: #f59e0b;
+}
+
+/* ---------------- 数据源（实机对接预留） ---------------- */
+.api-state {
+  display: flex;
+  align-items: center;
+  margin-top: 10rpx;
+}
+
+.api-state .badge {
+  margin-right: 12rpx;
+}
+
+.api-state-text {
+  font-size: 22rpx;
+  color: #8b95a7;
+}
+
+.api-err {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #ef4444;
+  line-height: 30rpx;
+}
+
+.api-field {
+  margin-top: 14rpx;
+}
+
+.api-label {
+  display: block;
+  margin-bottom: 6rpx;
+  font-size: 22rpx;
+  color: #8b95a7;
+}
+
+.api-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 68rpx;
+  padding: 0 16rpx;
+  font-size: 24rpx;
+  color: #2d3748;
+  background: #f6f8fb;
+  border: 1rpx solid #e5e9f0;
+  border-radius: 10rpx;
+}
+
+.api-log {
+  margin-top: 8rpx;
+}
+
+.api-log-item {
+  font-size: 22rpx;
+  color: #5a6577;
+  line-height: 34rpx;
+}
+
+/* ---------------- 通用 ---------------- */
+.btn-full {
+  width: 100%;
+  text-align: center;
+  margin-top: 8rpx;
+}

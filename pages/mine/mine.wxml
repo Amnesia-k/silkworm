@@ -1,0 +1,214 @@
+<!-- 加载态：骨架屏（barn-bar 在 page-body 之内，随 page-body 一起隐藏） -->
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page-body mine-page" wx:if="{{!loading}}">
+
+  <barn-bar from="/pages/mine/mine" />
+
+  <!-- ===================== 用户与角色 ===================== -->
+  <view class="card" wx:if="{{role}}">
+    <view class="card-header">
+      <view class="card-title">用户与角色</view>
+      <view class="card-more">本机演示</view>
+    </view>
+    <view class="user-row">
+      <view class="user-avatar">{{role.name}}</view>
+      <view class="user-main">
+        <view class="user-name">{{role.name}}</view>
+        <view class="user-desc">{{roleDesc}}</view>
+      </view>
+    </view>
+    <view class="divider"></view>
+    <view class="kv-row">
+      <text class="kv-label">职责范围</text>
+      <text class="kv-value">{{role.scope}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">使用终端</text>
+      <text class="kv-value">{{role.terminals}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">按职责分工人数</text>
+      <text class="kv-value">{{role.headcount}}</text>
+    </view>
+
+    <view class="divider"></view>
+    <view class="section-title">切换角色（演示用，立即生效）</view>
+    <view class="chip-row">
+      <view class="chip {{role.key === item.key ? 'chip-on' : ''}}" wx:for="{{roleList}}" wx:key="key" wx:for-item="item" data-key="{{item.key}}" bindtap="onRole">{{item.name}}</view>
+    </view>
+    <view class="tip">角色切换只影响本机权限判定，真实权限由服务端下发。</view>
+  </view>
+
+  <!-- ===================== 当前蚕房 ===================== -->
+  <view class="card" wx:if="{{status}}">
+    <view class="card-header">
+      <view class="card-title">当前蚕房</view>
+      <view class="card-more" bindtap="onSwitchBarn">切换蚕房</view>
+    </view>
+    <view class="barn-row">
+      <view class="barn-name">{{status.name}}</view>
+      <view class="badge mode-{{status.modeTone}}">{{status.modeName}}</view>
+      <view class="badge {{status.online ? 'badge-green' : 'badge-gray'}}">{{status.online ? '在线' : '离线'}}</view>
+    </view>
+    <view class="card-sub">{{status.barn}} · {{status.zone}} · {{status.group}} · 面积 {{status.area}} m² · {{status.instarName}} · {{status.varietyName}}</view>
+
+    <view class="kv-grid">
+      <view class="kv-item">
+        <view class="kv-item-label">当前温度</view>
+        <view class="kv-item-value">{{status.tempText}}<text class="kv-item-unit">℃</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">当前湿度</view>
+        <view class="kv-item-value">{{status.humiText}}<text class="kv-item-unit">%RH</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">目标温度</view>
+        <view class="kv-item-value">{{status.target.tempText}}</view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">目标湿度</view>
+        <view class="kv-item-value">{{status.target.humiText}}</view>
+      </view>
+    </view>
+
+    <view class="kv-row">
+      <text class="kv-label">越限状态</text>
+      <text class="kv-value {{status.outOfRange.inRange ? 'text-ok' : 'text-warn'}}">{{status.outOfRange.levelName}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">通信</text>
+      <text class="kv-value">{{status.online ? status.wifiText : status.offlineText}}</text>
+    </view>
+    <view class="kv-row" wx:if="{{config}}">
+      <text class="kv-label">配置版本</text>
+      <text class="kv-value mono">{{config.ver}} · {{config.updatedText}} · {{config.by}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">活跃告警</text>
+      <text class="kv-value">{{status.alarms.active}} 条（紧急 {{status.alarms.critical}} / 警告 {{status.alarms.warn}} / 提示 {{status.alarms.info}}）</text>
+    </view>
+
+    <view class="divider"></view>
+    <view class="section-title">设备台账（{{status.devices.on}}/{{status.devices.total}} 台运行，点击看详情）</view>
+    <view class="chip-row">
+      <view class="chip" wx:for="{{devices}}" wx:key="id" wx:for-item="d" data-id="{{d.id}}" bindtap="onGoDevice">{{d.name}} · {{d.stateText}}</view>
+    </view>
+    <view class="tip">离线时仅展示本机缓存数据：最近上报 {{status.lastReportText}}。</view>
+  </view>
+
+  <view class="empty" wx:if="{{!status}}">正在读取蚕房上下文…</view>
+
+  <!-- ===================== 功能入口 ===================== -->
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">功能入口</view>
+      <view class="card-more">P02 ~ P07</view>
+    </view>
+    <view class="list-item" wx:for="{{entries}}" wx:key="key" wx:for-item="entry" data-key="{{entry.key}}" bindtap="onNav">
+      <view class="list-main">
+        <view class="list-name">{{entry.title}} <text class="entry-code">{{entry.code}}</text></view>
+        <view class="list-meta">{{entry.sub}}</view>
+      </view>
+      <view class="list-tail">
+        <text class="badge badge-blue" wx:if="{{badges[entry.key]}}">{{badges[entry.key]}}</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===================== 审计日志 ===================== -->
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">审计日志</view>
+      <view class="card-more" bindtap="onToggleAudit">{{auditOpen ? '收起' : '展开最近 10 条'}}</view>
+    </view>
+    <view class="card-sub">写操作与 Agent 提问均写入审计日志，不可修改</view>
+
+    <view wx:if="{{auditOpen}}">
+      <view wx:if="{{!auditList.length}}" class="empty">暂无审计记录</view>
+      <view class="audit-item" wx:for="{{auditList}}" wx:key="key" wx:for-item="log">
+        <view class="audit-head">
+          <text class="audit-time mono">{{log.timeText}}</text>
+          <text class="badge badge-gray">{{log.user}}</text>
+        </view>
+        <view class="audit-body">
+          <text class="audit-action">{{log.action}}</text>
+          <text class="audit-target mono" wx:if="{{log.target}}">→ {{log.target}}</text>
+        </view>
+        <view class="audit-memo" wx:if="{{log.memo}}">备注：{{log.memo}}</view>
+        <view class="audit-token mono" wx:if="{{log.tokenId}}">令牌：{{log.tokenId}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===================== 后端接口（病蚕识别 / 夹取作业） ===================== -->
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">后端接口</view>
+      <view class="card-more" bindtap="onToggleApi">{{apiOpen ? '收起' : '设置'}}</view>
+    </view>
+    <view class="card-sub">病蚕识别与夹取作业的数据由后端提供；温湿度、曲线、告警与设备控制暂无后端接口，仍走本机模拟。</view>
+
+    <view class="api-state">
+      <text class="badge {{api.ok ? 'badge-green' : 'badge-red'}}">{{api.ok ? '接口正常' : '接口异常'}}</text>
+      <text class="api-state-text">上次 {{api.lastSyncText}} · 请求 {{api.requests}} 次 · 待裁定 {{api.pending}} 条</text>
+    </view>
+    <view class="api-err" wx:if="{{api.message}}">{{api.message}}</view>
+
+    <view wx:if="{{apiOpen}}">
+      <view class="api-field">
+        <text class="api-label">后端地址</text>
+        <input class="api-input mono" value="{{api.baseUrl}}" placeholder="http://10.66.66.1/api" data-k="baseUrl" bindinput="onApiInput" bindblur="onApiSave" />
+      </view>
+      <view class="api-field">
+        <text class="api-label">访问令牌</text>
+        <input class="api-input mono" value="{{api.token}}" placeholder="Bearer Token（服务端只校验非空）" data-k="token" bindinput="onApiInput" bindblur="onApiSave" />
+      </view>
+      <view class="api-field">
+        <text class="api-label">蚕区 zone</text>
+        <input class="api-input mono" value="{{api.zone}}" placeholder="zone01" data-k="zone" bindinput="onApiInput" bindblur="onApiSave" />
+      </view>
+
+      <view class="btn-row">
+        <view class="btn-ghost" bindtap="onApiTest">测试连接</view>
+        <view class="btn-ghost" bindtap="onApiRefresh">立即同步</view>
+        <view class="btn-ghost" bindtap="onApiReset">恢复默认</view>
+      </view>
+
+      <view class="section-title">最近请求（最近 5 条）</view>
+      <view class="api-log" wx:if="{{apiLog.length}}">
+        <view class="api-log-item mono" wx:for="{{apiLog}}" wx:key="key">{{item.clock}} · {{item.method}} · {{item.ok ? '✓' : '✗'}} {{item.code}} · {{item.ms}}ms</view>
+      </view>
+      <view class="empty" wx:if="{{!apiLog.length}}">暂无请求记录</view>
+      <view class="tip">无推送，进入机械页后每 {{api.pollText}} 拉一次待裁定病蚕；裁定「放行」由服务端自动下发夹取，App 只看夹取作业的「已放到位」。接口见 docs/实机对接接口.md。</view>
+    </view>
+  </view>
+
+  <!-- ===================== 关于 ===================== -->
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">关于</view>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">系统名称</text>
+      <text class="kv-value">蚕房环境调控系统</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">设计依据</text>
+      <text class="kv-value">《环境调控规格书》</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">配置版本</text>
+      <text class="kv-value mono">{{aboutVer}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">数据来源</text>
+      <text class="kv-value">病蚕/夹取：后端接口 {{api.baseUrl}}；环境数据：本机模拟引擎</text>
+    </view>
+    <view class="tip">演示环境：温湿度、曲线、告警与设备控制按模拟时钟推进；病蚕识别与夹取作业由后端提供（接口见 docs/实机对接接口.md）。</view>
+    <view class="divider"></view>
+    <view class="btn-danger btn-full" bindtap="onReset">重置演示数据</view>
+  </view>
+
+</view>

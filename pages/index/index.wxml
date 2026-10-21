@@ -1,0 +1,111 @@
+<barn-bar from="/pages/index/index" />
+
+<!-- 加载态：骨架屏 -->
+<skeleton wx:if="{{loading}}" rows="{{3}}" hero="{{true}}" />
+
+<view class="page-body" wx:if="{{!loading && info}}">
+  <!-- 实时环境（紧凑：主数值 + 一行次要字段） -->
+  <view class="card">
+    <view class="env-head">
+      <text class="badge badge-{{levelBadge}}">{{info.outOfRange.levelName}}</text>
+      <text class="env-upd">上报 {{info.lastReportText}}</text>
+      <text class="card-more" bindtap="goControl">控制 ›</text>
+    </view>
+
+    <view class="env-main">
+      <view class="env-item">
+        <text class="env-value {{info.outOfRange.tempIn ? '' : 'text-danger'}}">{{info.tempText}}</text>
+        <text class="env-unit">℃</text>
+        <text class="env-label">温度 · 目标 {{info.target.tempText}} ℃</text>
+      </view>
+      <view class="env-item">
+        <text class="env-value {{info.outOfRange.humiIn ? '' : 'text-danger'}}">{{info.humiText}}</text>
+        <text class="env-unit">%RH</text>
+        <text class="env-label">湿度 · 目标 {{info.target.humiText}} %RH</text>
+      </view>
+    </view>
+
+    <view class="out-list" wx:if="{{info.outOfRange.items.length > 0}}">
+      <view class="out-item" wx:for="{{info.outOfRange.items}}" wx:key="metric">
+        <text class="dot dot-red"></text>
+        <text>{{item.metric === 'temp' ? '温度' : '湿度'}}{{item.dir === 'high' ? '偏高' : '偏低'}} {{item.value}}（限值 {{item.limit}}），已持续 {{item.dueSec}} s</text>
+      </view>
+    </view>
+
+    <view class="env-foot">露点 {{info.dewp}} ℃ ｜ WiFi {{info.wifiText}} ｜ 传感器{{info.sensorOk ? '正常' : '失效'}} ｜ 联锁 {{interlockText}} ｜ {{info.instarName}} · {{info.varietyName}}</view>
+  </view>
+
+  <!-- 环境趋势：进入视口后才画出（曲线自己长出来） -->
+  <view class="card chart-card" id="envChartWrap">
+    <view class="card-header">
+      <text class="card-title">环境趋势</text>
+      <text class="card-sub">近 6 小时</text>
+      <text class="card-more" bindtap="goHistory">全屏曲线 ›</text>
+    </view>
+    <view class="chart-stats" wx:if="{{chartStats}}">
+      <text class="cs-item">最高 <text class="cs-num">{{chartStats.tempMax}}</text> ℃</text>
+      <text class="cs-item">最低 <text class="cs-num">{{chartStats.tempMin}}</text> ℃</text>
+      <text class="cs-item">平均 <text class="cs-num">{{chartStats.tempAvg}}</text> ℃</text>
+      <text class="cs-item {{chartStats.outWarn ? 'text-danger' : ''}}">越限 {{chartStats.outText}}</text>
+    </view>
+    <canvas type="2d" id="envChart" class="chart"></canvas>
+    <view class="legend">
+      <text class="legend-item"><text class="lg-dot lg-blue"></text>温度 ℃</text>
+      <text class="legend-item"><text class="lg-dot lg-green"></text>湿度 %RH</text>
+      <text class="legend-item"><text class="lg-band"></text>目标区间</text>
+      <text class="legend-item"><text class="lg-dash"></text>平均温度</text>
+    </view>
+  </view>
+
+  <!-- 三格速览 -->
+  <view class="mini-grid">
+    <view class="mini-tile" bindtap="goControl">
+      <text class="mini-num">{{info.devices.on}}/{{info.devices.total}}</text>
+      <text class="mini-cap">环控设备</text>
+    </view>
+    <view class="mini-tile" bindtap="goAlarms">
+      <text class="mini-num {{info.alarms.active > 0 ? 'text-danger' : ''}}">{{info.alarms.active}}</text>
+      <text class="mini-cap">活跃告警</text>
+    </view>
+    <view class="mini-tile" bindtap="goMachine">
+      <text class="mini-num {{machineWarn ? 'text-warn' : ''}}">{{machineText}}</text>
+      <text class="mini-cap {{machineWarn ? 'text-warn' : ''}}">{{machineWarn ? '机械待干预' : '机械作业'}}</text>
+    </view>
+  </view>
+
+  <!-- 环控设备状态（一行一台） -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">环控设备</text>
+      <text class="badge mode-{{info.modeTone}}">{{info.modeName}}</text>
+      <text class="card-more" bindtap="goControl">手动控制 ›</text>
+    </view>
+    <view class="dev-row" wx:for="{{devices}}" wx:key="id" data-id="{{item.id}}" bindtap="goDevice">
+      <text class="dot {{item.on ? 'dot-green' : 'dot-gray'}}"></text>
+      <text class="dev-name">{{item.name}}</text>
+      <text class="dev-kind">{{item.kindName}}</text>
+      <text class="badge badge-{{item.locked ? 'red' : (item.on ? 'green' : 'gray')}}">{{item.locked ? item.lockText : item.stateText}}</text>
+    </view>
+    <view class="tip env-line">耦合工况 {{couplingText}} ｜ 服务端 {{info.serverStateName}}<block wx:if="{{info.mode === 'manual'}}"> ｜ 手动剩余 {{info.manualLeftSec}} s</block><block wx:if="{{!info.online}}"> ｜ 离线自治 {{info.offlineText}}</block></view>
+  </view>
+
+  <!-- 活跃告警 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">活跃告警</text>
+      <text class="card-sub">紧急 {{info.alarms.critical}} · 警告 {{info.alarms.warn}} · 提示 {{info.alarms.info}}</text>
+      <text class="card-more" bindtap="goAlarms">全部 ›</text>
+    </view>
+    <view class="alarm-row" wx:for="{{alarmList}}" wx:key="id" data-id="{{item.id}}" bindtap="goAlarmDetail">
+      <view class="alarm-head">
+        <text class="badge {{item.badge}}">{{item.levelName}}</text>
+        <text class="alarm-code mono">{{item.code}}</text>
+        <text class="alarm-time">{{item.agoText}}</text>
+      </view>
+      <view class="alarm-text">{{item.text}}</view>
+    </view>
+    <view class="empty" wx:if="{{alarmList.length === 0}}">当前无活跃告警</view>
+  </view>
+
+  <view class="tip foot-tip">下拉刷新 · 模拟时钟 {{info.simClockText}}</view>
+</view>

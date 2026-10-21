@@ -1,0 +1,20 @@
+<!-- components/skeleton/skeleton.wxml —— 骨架屏占位块（卡片风格与全局 .card 一致） -->
+<view class="sk-wrap">
+  <view class="sk-hero" wx:if="{{hero}}">
+    <view class="sk-bar sk-bar-title w60"></view>
+    <view class="sk-bar sk-bar-sub w40"></view>
+  </view>
+
+  <view class="sk-card" wx:for="{{rowList}}" wx:key="*this">
+    <view class="sk-head">
+      <view class="sk-bar w40"></view>
+      <view class="sk-pill"></view>
+    </view>
+    <view class="sk-bar w90"></view>
+    <view class="sk-bar w70"></view>
+    <view class="sk-nums">
+      <view class="sk-num"></view>
+      <view class="sk-num"></view>
+    </view>
+  </view>
+</view>

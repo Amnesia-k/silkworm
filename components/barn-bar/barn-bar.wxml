@@ -1,0 +1,30 @@
+<view class="barn-bar" wx:if="{{info}}">
+  <view class="bb-main">
+    <view class="bb-line1">
+      <text class="bb-name">{{info.name}}</text>
+      <text class="bb-mode mode-{{info.modeTone}}">{{info.modeName}}</text>
+      <text class="bb-online {{info.online ? 'text-ok' : 'text-danger'}}">{{info.online ? '在线' : '离线'}}</text>
+    </view>
+    <view class="bb-line2">
+      <text>{{info.barn}} / {{info.zone}}</text>
+      <text class="bb-sep">·</text>
+      <text>{{info.varietyName}} · {{info.instarName}}</text>
+      <text class="bb-sep">·</text>
+      <text>{{info.area}}㎡</text>
+    </view>
+    <view class="bb-line3">目标区间 {{info.targetText}}</view>
+  </view>
+
+  <view class="bb-right" wx:if="{{showMetrics}}">
+    <view class="bb-metric">
+      <text class="bb-value {{info.tempOut === 'high' ? 'text-danger' : (info.tempOut === 'low' ? 'text-primary' : '')}}">{{info.temp}}</text>
+      <text class="bb-unit">℃</text>
+    </view>
+    <view class="bb-metric">
+      <text class="bb-value {{info.humiOut === 'high' ? 'text-danger' : (info.humiOut === 'low' ? 'text-primary' : '')}}">{{info.humi}}</text>
+      <text class="bb-unit">%</text>
+    </view>
+  </view>
+
+  <view class="bb-switch" bindtap="onSwitch">切换 ›</view>
+</view>

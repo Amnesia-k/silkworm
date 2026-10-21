@@ -1,0 +1,233 @@
+.window-text {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 12rpx;
+}
+
+.custom-panel {
+  margin-top: 14rpx;
+  background: #f7f9fc;
+  border-radius: 14rpx;
+  padding: 16rpx;
+}
+
+.cp-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.cp-label {
+  width: 70rpx;
+  font-size: 24rpx;
+  color: #5b6474;
+}
+
+.picker-box {
+  background: #fff;
+  border: 1rpx solid #e3e9f2;
+  border-radius: 10rpx;
+  padding: 10rpx 18rpx;
+  font-size: 24rpx;
+  color: #1f2937;
+  margin-right: 14rpx;
+  min-width: 180rpx;
+  text-align: center;
+}
+
+.chip-label {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-right: 12rpx;
+  align-self: center;
+}
+
+/* 曲线：放大为页面视觉重心，统计做成两行（温度一行 / 湿度一行） */
+.chart-card {
+  padding-bottom: 20rpx;
+}
+
+/* 曲线区域：接手势（双指缩放 / 单指拖动），挡住页面滚动 */
+.chart-box {
+  position: relative;
+  width: 100%;
+}
+
+.chart {
+  width: 100%;
+  height: 520rpx;
+}
+
+/* 手势提示条 */
+.chart-bar {
+  display: flex;
+  align-items: center;
+  margin-top: 4rpx;
+}
+
+.cb-hint {
+  flex: 1;
+  font-size: 20rpx;
+  color: #a8b1c2;
+}
+
+.cb-zoom {
+  font-size: 20rpx;
+  color: #3d6df2;
+  background: #eef3ff;
+  border-radius: 999rpx;
+  padding: 2rpx 14rpx;
+  margin-right: 10rpx;
+}
+
+.cb-reset {
+  font-size: 20rpx;
+  color: #3d6df2;
+  padding: 2rpx 12rpx;
+  border: 1rpx solid #d3ddf5;
+  border-radius: 999rpx;
+}
+
+.stat-rows {
+  background: #f7f9fc;
+  border-radius: 12rpx;
+  padding: 10rpx 16rpx;
+  margin-bottom: 8rpx;
+}
+
+.sr-row {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 0;
+  font-size: 21rpx;
+  color: #8b95a7;
+}
+
+.sr-row:first-child {
+  border-bottom: 1rpx solid #edf1f7;
+}
+
+.sr-tag {
+  width: 66rpx;
+  font-size: 21rpx;
+  color: #5b6474;
+  flex-shrink: 0;
+}
+
+.sr-cell {
+  flex: 1;
+  text-align: center;
+}
+
+.sr-num {
+  font-size: 25rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 2rpx;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: #8b95a7;
+}
+
+.legend-item {
+  margin-right: 24rpx;
+}
+
+.lg-dot {
+  display: inline-block;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  margin-right: 6rpx;
+}
+
+.lg-blue { background: #3d6df2; }
+.lg-green { background: #10b981; }
+.lg-red { background: #ef4444; }
+
+.lg-band {
+  display: inline-block;
+  width: 22rpx;
+  height: 12rpx;
+  border-radius: 3rpx;
+  background: rgba(16, 185, 129, 0.35);
+  margin-right: 6rpx;
+}
+
+.lg-dash {
+  display: inline-block;
+  width: 22rpx;
+  height: 0;
+  border-top: 2rpx dashed #b8c1d1;
+  margin-right: 6rpx;
+  vertical-align: middle;
+}
+
+.seg {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.seg:last-child {
+  border-bottom: none;
+}
+
+.seg-head {
+  display: flex;
+  align-items: center;
+}
+
+.seg-time {
+  font-size: 24rpx;
+  color: #1f2937;
+  margin-left: 12rpx;
+}
+
+.seg-dur {
+  margin-left: auto;
+  font-size: 20rpx;
+  color: #8b95a7;
+}
+
+.seg-body {
+  font-size: 22rpx;
+  color: #5b6474;
+  margin-top: 6rpx;
+}
+
+.sample-row {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+  font-size: 24rpx;
+  color: #1f2937;
+}
+
+.sample-row:last-child {
+  border-bottom: none;
+}
+
+.sample-head {
+  font-size: 20rpx;
+  color: #8b95a7;
+}
+
+.s-col {
+  flex: 1;
+  text-align: center;
+}
+
+.s-time {
+  flex: 1.4;
+  text-align: left;
+}
+
+.foot-tip {
+  margin: 20rpx 24rpx;
+}

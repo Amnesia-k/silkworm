@@ -1,0 +1,207 @@
+<!-- pages/config/config.wxml —— P05 参数配置（仅管理员可修改） -->
+<barn-bar from="/pages/config/config" />
+
+<skeleton wx:if="{{loading}}" rows="{{3}}" />
+
+<view class="page-body" wx:if="{{!loading}}">
+
+  <!-- 权限提示 -->
+  <view class="card" wx:if="{{!canConfig}}">
+    <view class="card-header">
+      <text class="card-title text-danger">无权修改调控参数</text>
+      <text class="card-sub">仅管理员</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">权限校验</text>
+      <text class="kv-value text-danger">{{permReason}}</text>
+    </view>
+    <view class="tip">仅管理员可修改；其他角色只读，可在「我的」页切换角色。</view>
+  </view>
+
+  <!-- 当前配置（data.getConfigView） -->
+  <view class="card" wx:if="{{config}}">
+    <view class="card-header">
+      <text class="card-title">当前配置</text>
+      <text class="badge {{canConfig ? 'badge-green' : 'badge-gray'}}">{{canConfig ? '管理员可修改' : '只读模式'}}</text>
+      <text class="badge badge-blue">{{config.ver}}</text>
+      <text class="card-sub">{{config.updatedText}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">蚕房 / 控制区</text>
+      <text class="kv-value">{{config.barn}} / {{config.zone}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">当前龄期 / 品种</text>
+      <text class="kv-value">{{config.instarName}}（{{config.instar}}）/ {{config.varietyName}}（{{config.variety}}）</text>
+    </view>
+    <view class="divider"></view>
+    <view class="kv-grid">
+      <view class="kv-item">
+        <view class="kv-item-label">温度目标</view>
+        <view class="kv-item-value">{{config.range.tempText}}</view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">湿度目标</view>
+        <view class="kv-item-value">{{config.range.humiText}}</view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">设定值（区间中心）</view>
+        <view class="kv-item-value">{{config.range.tSet}}<text class="kv-item-unit">℃</text> / {{config.range.hSet}}<text class="kv-item-unit">%RH</text></view>
+      </view>
+      <view class="kv-item">
+        <view class="kv-item-label">容许越限</view>
+        <view class="kv-item-value">{{config.range.tol}}<text class="kv-item-unit">min</text></view>
+      </view>
+    </view>
+    <view class="divider"></view>
+    <view class="kv-row">
+      <text class="kv-label">最后修改人</text>
+      <text class="kv-value">{{config.by}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">变更备注</text>
+      <text class="kv-value note-value">{{config.note}}</text>
+    </view>
+  </view>
+
+  <!-- 目标区间编辑：龄期 / 品种（规格书 6.3 十八行表） -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">目标区间</text>
+      <text class="card-sub">龄期 · 品种对照</text>
+    </view>
+
+    <view class="pick-row">
+      <text class="pick-label">龄期</text>
+      <view class="chip-row">
+        <text class="chip {{instar === item.code ? 'chip-on' : ''}}" wx:for="{{instars}}" wx:key="code" data-code="{{item.code}}" bindtap="onPickInstar">{{item.name}}</text>
+      </view>
+    </view>
+
+    <view class="pick-row">
+      <text class="pick-label">品种</text>
+      <view class="chip-row">
+        <text class="chip {{variety === item.code ? 'chip-on' : ''}}" wx:for="{{varieties}}" wx:key="code" data-code="{{item.code}}" bindtap="onPickVariety">{{item.name}}</text>
+      </view>
+    </view>
+
+    <view class="divider"></view>
+
+    <view class="field-grid">
+      <view class="field-row">
+        <text class="field-label">温度下限</text>
+        <input class="field-input" type="digit" value="{{tMin}}" data-key="tMin" bindinput="onRangeInput" disabled="{{!canConfig}}" />
+        <text class="field-unit">℃</text>
+      </view>
+      <view class="field-row">
+        <text class="field-label">温度上限</text>
+        <input class="field-input" type="digit" value="{{tMax}}" data-key="tMax" bindinput="onRangeInput" disabled="{{!canConfig}}" />
+        <text class="field-unit">℃</text>
+      </view>
+      <view class="field-row">
+        <text class="field-label">湿度下限</text>
+        <input class="field-input" type="digit" value="{{hMin}}" data-key="hMin" bindinput="onRangeInput" disabled="{{!canConfig}}" />
+        <text class="field-unit">%RH</text>
+      </view>
+      <view class="field-row">
+        <text class="field-label">湿度上限</text>
+        <input class="field-input" type="digit" value="{{hMax}}" data-key="hMax" bindinput="onRangeInput" disabled="{{!canConfig}}" />
+        <text class="field-unit">%RH</text>
+      </view>
+    </view>
+
+    <view class="preview-box" wx:if="{{preview}}">
+      <text class="preview-line">该组合默认值：{{preview.tempText}} / {{preview.humiText}}</text>
+      <text class="preview-line">{{preview.tolText}}</text>
+    </view>
+
+    <view class="err-box" wx:if="{{localError}}">{{localError}}</view>
+  </view>
+
+  <!-- 控制参数（spec.CONTROL_PARAMS + engine.getParams，按 spec.PARAM_GROUPS 折成温度/湿度/保护三组） -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">控制参数</text>
+      <text class="card-sub">共 {{params.length}} 项 · 分 {{paramGroups.length}} 组</text>
+    </view>
+
+    <view class="pgroup" wx:for="{{paramGroups}}" wx:for-item="g" wx:for-index="gi" wx:key="key">
+      <view class="pgroup-head" data-key="{{g.key}}" bindtap="onToggleGroup">
+        <view class="pgroup-main">
+          <text class="pgroup-name">{{g.name}}</text>
+          <text class="pgroup-count">{{g.count}} 项</text>
+          <text class="badge badge-orange" wx:if="{{g.changedCount > 0}}">{{g.changedCount}} 项待下发</text>
+        </view>
+        <text class="pgroup-arrow {{g.open ? 'pgroup-arrow-on' : ''}}">{{g.open ? '收起' : '展开'}}</text>
+      </view>
+      <view class="pgroup-sum" wx:if="{{!g.open}}">{{g.summary}}</view>
+
+      <view class="pgroup-body" wx:if="{{g.open}}">
+        <view class="param" wx:for="{{g.list}}" wx:key="key">
+          <view class="param-head">
+            <text class="param-label">{{item.label}}</text>
+            <text class="param-flag" wx:if="{{item.changed}}">待下发</text>
+            <text class="param-value {{item.changed ? 'text-primary' : ''}}">{{item.showValue}}<text class="param-unit">{{item.unit}}</text></text>
+          </view>
+          <slider class="param-slider" min="{{item.min}}" max="{{item.max}}" step="{{item.step}}" value="{{item.value}}"
+            activeColor="#3d6df2" backgroundColor="#eef2f8" block-size="18" disabled="{{!canConfig}}"
+            data-gi="{{gi}}" data-li="{{index}}" data-flat="{{item.flat}}" data-key="{{item.key}}"
+            bindchanging="onParamChanging" bindchange="onParamChange" />
+          <view class="param-foot">
+            <text class="param-range">可调 {{item.minText}} ~ {{item.maxText}} {{item.unit}}</text>
+            <text class="param-side">生效位置：{{item.side}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="tip" wx:if="{{paramChanged === 0}}">点分组展开，拖动滑块调整参数；点「确认下发」并填写变更原因后才会写入。</view>
+  </view>
+
+  <!-- 变更原因 + 下发 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">变更原因</text>
+      <text class="card-sub">{{paramChanged > 0 ? paramChanged + ' 项待下发' : '必填'}}</text>
+    </view>
+    <textarea class="note-input" value="{{note}}" maxlength="120" placeholder="例：I4→I5 转龄，按两广二号目标区间下调 1℃" bindinput="onNoteInput" disabled="{{!canConfig}}" />
+    <button class="btn-primary apply-btn {{canConfig ? '' : 'btn-disabled'}}" bindtap="onApply">确认下发配置</button>
+  </view>
+
+  <!-- 历史参数版本（data.getConfigHistory） -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">历史参数版本</text>
+      <text class="card-sub">共 {{history.length}} 条 · 可回滚旧版本</text>
+    </view>
+    <view class="empty" wx:if="{{history.length === 0}}">暂无历史参数版本</view>
+    <view class="list-item" wx:for="{{history}}" wx:key="ver">
+      <view class="list-main">
+        <view class="list-name">版本 {{item.ver}}<text class="badge badge-gray name-badge">{{item.by}}</text></view>
+        <view class="list-meta">{{item.timeText}} · {{item.rangeText}}</view>
+        <view class="list-meta">变更原因：{{item.note}}</view>
+      </view>
+      <view class="list-tail">
+        <text class="btn-mini {{canConfig ? '' : 'btn-disabled'}}" data-ver="{{item.ver}}" bindtap="onRollback">回滚</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 安全联锁（只读，spec.INTERLOCKS 前 4 条） -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">安全联锁</text>
+      <text class="card-sub">只读 · 优先级最高</text>
+    </view>
+    <view class="lk" wx:for="{{interlocks}}" wx:key="code">
+      <view class="lk-head">
+        <text class="tag-solid lk-code">{{item.code}}</text>
+        <text class="lk-name">{{item.name}}</text>
+      </view>
+      <view class="lk-line"><text class="lk-key">触发</text>{{item.trigger}}</view>
+      <view class="lk-line"><text class="lk-key">动作</text>{{item.action}}</view>
+    </view>
+  </view>
+
+
+</view>

@@ -1,0 +1,276 @@
+/* pages/agent/agent.wxss —— 仅补充全局样式（app.wxss）没有的聊天气泡与工具过程样式 */
+
+.agent-page {
+  padding-bottom: 140rpx; /* 让出底部输入栏 */
+}
+
+/* ---------------- 能力声明 ---------------- */
+.declare-list {
+  margin-top: 12rpx;
+}
+
+.declare-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 10rpx 0;
+}
+
+.declare-text {
+  flex: 1;
+  margin-left: 12rpx;
+  font-size: 24rpx;
+  color: #4a5568;
+  line-height: 34rpx;
+}
+
+/* ---------------- 工具清单 ---------------- */
+.tool-catalog {
+  margin-top: 8rpx;
+}
+
+.tool-cat-item {
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #eef2f8;
+}
+
+.tool-cat-name {
+  font-size: 26rpx;
+  color: #3d6df2;
+  font-weight: 600;
+}
+
+.tool-cat-use {
+  font-size: 23rpx;
+  color: #4a5568;
+  line-height: 32rpx;
+  margin-top: 4rpx;
+}
+
+.tool-cat-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 6rpx;
+}
+
+.tool-cat-timeout {
+  margin-left: 12rpx;
+  font-size: 21rpx;
+  color: #8b95a7;
+}
+
+/* ---------------- 气泡 ---------------- */
+.msg-row {
+  display: flex;
+  margin: 18rpx 0;
+}
+
+.msg-row-user {
+  justify-content: flex-end;
+}
+
+.msg-row-agent {
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 18rpx 22rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(61, 109, 242, 0.06);
+}
+
+.bubble-user {
+  background: #3d6df2;
+  border-top-right-radius: 6rpx;
+}
+
+.bubble-agent {
+  background: #ffffff;
+  border-top-left-radius: 6rpx;
+  border: 1rpx solid #eef2f8;
+}
+
+.bubble-text {
+  font-size: 25rpx;
+  line-height: 38rpx;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.bubble-user .bubble-text {
+  color: #ffffff;
+}
+
+.bubble-agent .bubble-text {
+  color: #2d3748;
+}
+
+/* ---------------- Agent 附加区 ---------------- */
+.msg-extra {
+  margin: -8rpx 0 18rpx 0;
+}
+
+.action-box {
+  background: #ffffff;
+  border: 1rpx solid #eef2f8;
+  border-radius: 20rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 10rpx;
+}
+
+.action-item {
+  border-top: 1rpx solid #eef2f8;
+  padding-top: 14rpx;
+  margin-top: 14rpx;
+}
+
+.action-item:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.action-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.action-title {
+  margin-left: 12rpx;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.tools-box {
+  margin-top: 12rpx;
+}
+
+.tools-toggle {
+  display: inline-block;
+  font-size: 23rpx;
+  color: #3d6df2;
+  padding: 6rpx 0;
+}
+
+.tool-list {
+  margin-top: 8rpx;
+  background: #f7f9fc;
+  border-radius: 16rpx;
+  padding: 14rpx 18rpx;
+}
+
+.tool-item {
+  padding: 10rpx 0;
+  border-top: 1rpx dashed #eef2f8;
+}
+
+.tool-item:first-child {
+  border-top: none;
+}
+
+.tool-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tool-name {
+  font-size: 24rpx;
+  color: #3d6df2;
+  font-weight: 600;
+}
+
+.tool-cost {
+  font-size: 21rpx;
+  color: #f59e0b;
+}
+
+.tool-use,
+.tool-args,
+.tool-result {
+  font-size: 21rpx;
+  color: #8b95a7;
+  line-height: 30rpx;
+  margin-top: 4rpx;
+  word-break: break-all;
+}
+
+.tool-result {
+  color: #4a5568;
+}
+
+.source-line {
+  margin-top: 10rpx;
+  padding-left: 6rpx;
+  font-size: 21rpx;
+  color: #8b95a7;
+  line-height: 30rpx;
+}
+
+.source-label {
+  color: #8b95a7;
+}
+
+.source-item {
+  display: block;
+  color: #8b95a7;
+}
+
+.chat-bottom {
+  height: 1rpx;
+}
+
+/* ---------------- 底部输入栏 ---------------- */
+.input-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1rpx solid #eef2f8;
+  box-shadow: 0 -4rpx 16rpx rgba(45, 55, 72, 0.05);
+  z-index: 20;
+}
+
+.input-box {
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0 22rpx;
+  background: #f4f6f9;
+  border-radius: 36rpx;
+  font-size: 25rpx;
+  color: #2d3748;
+}
+
+.input-ph {
+  color: #8b95a7;
+  font-size: 24rpx;
+}
+
+.btn-send {
+  width: 130rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  margin-left: 16rpx;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.btn-mini {
+  flex: 1;
+  height: 62rpx;
+  line-height: 62rpx;
+  font-size: 24rpx;
+  text-align: center;
+  margin-right: 16rpx;
+}
+
+.btn-mini:last-child {
+  margin-right: 0;
+}

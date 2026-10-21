@@ -1,0 +1,92 @@
+/* pages/alerts/alerts.wxss —— P03 告警列表补充样式（其余用 app.wxss 全局类） */
+
+.stat-card {
+  padding-bottom: 20rpx;
+}
+
+.stat-note {
+  margin-top: 12rpx;
+}
+
+.filter-gap {
+  margin-top: 16rpx;
+}
+
+.dedup-tip {
+  margin-top: 4rpx;
+}
+
+.foot-tip {
+  margin: 20rpx 24rpx 0;
+}
+
+/* ---------------- 告警条目 ---------------- */
+.alarm-item {
+  display: flex;
+  align-items: stretch;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f2f5fa;
+}
+
+.alarm-item:last-child {
+  border-bottom: none;
+}
+
+/* 级别左侧色条（颜色由 item.levelColor 内联） */
+.alarm-bar {
+  flex: none;
+  width: 8rpx;
+  border-radius: 999rpx;
+  margin-right: 16rpx;
+}
+
+.alarm-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.alarm-top {
+  display: flex;
+  align-items: center;
+}
+
+.alarm-code {
+  font-size: 24rpx;
+  color: #5b6474;
+  margin-left: 12rpx;
+}
+
+.alarm-status {
+  margin-left: auto;
+}
+
+.alarm-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1f2937;
+  line-height: 1.45;
+  margin-top: 8rpx;
+}
+
+.alarm-meta {
+  font-size: 22rpx;
+  color: #8b95a7;
+  margin-top: 8rpx;
+}
+
+.alarm-dot {
+  margin: 0 8rpx;
+}
+
+/* 条目内「确认」按钮（catchtap，不触发整行跳转） */
+.alarm-ack {
+  flex: none;
+  align-self: center;
+  margin-left: 16rpx;
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  background: rgba(61, 109, 242, 0.12);
+  color: #3d6df2;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}

@@ -1,0 +1,87 @@
+.barn-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  background: linear-gradient(135deg, #3d6df2 0%, #5b8cff 100%);
+  color: #ffffff;
+}
+
+.bb-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.bb-line1 {
+  display: flex;
+  align-items: center;
+}
+
+.bb-name {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.bb-mode {
+  margin-left: 14rpx;
+  padding: 2rpx 14rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+}
+
+.bb-line1 .bb-mode {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.bb-online {
+  margin-left: 12rpx;
+  font-size: 20rpx;
+  opacity: 0.9;
+}
+
+.bb-line1 .bb-online { color: #ffffff !important; opacity: 0.85; }
+
+.bb-line2 {
+  font-size: 22rpx;
+  opacity: 0.86;
+  margin-top: 6rpx;
+}
+
+.bb-sep { margin: 0 8rpx; }
+
+.bb-line3 {
+  font-size: 22rpx;
+  opacity: 0.78;
+  margin-top: 4rpx;
+}
+
+.bb-right {
+  display: flex;
+  align-items: flex-end;
+  margin-left: 16rpx;
+}
+
+.bb-metric {
+  text-align: right;
+  margin-left: 20rpx;
+}
+
+.bb-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.bb-unit {
+  font-size: 20rpx;
+  opacity: 0.85;
+  margin-left: 2rpx;
+}
+
+.bb-switch {
+  margin-left: 20rpx;
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.2);
+}
