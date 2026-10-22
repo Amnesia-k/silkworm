@@ -4,15 +4,15 @@
   },
   "pages": [
     {
-      "path": "pages/room-select/room-select",
-      "style": {
-        "navigationBarTitleText": "选择蚕房"
-      }
-    },
-    {
       "path": "pages/login/login",
       "style": {
         "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/room-select/room-select",
+      "style": {
+        "navigationBarTitleText": "选择蚕房"
       }
     },
     {

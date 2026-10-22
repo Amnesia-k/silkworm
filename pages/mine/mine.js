@@ -160,6 +160,10 @@ Page({
       success: (r) => {
         if (!r.confirm) return
         auth.logout().then(() => {
+          if (auth.needsLogin()) {
+            wx.reLaunch({ url: '/pages/login/login' })
+            return
+          }
           this.refresh()
           wx.showToast({ title: '已退出登录', icon: 'success' })
         })

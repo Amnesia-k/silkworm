@@ -34,7 +34,7 @@ uni-app/
 │   ├── safety-bar/safety-bar.vue # 全局安全状态条（安全锁定/离线/传感器失效时才出现，挂在页面最顶部）
 │   └── skeleton/skeleton.vue   # 骨架屏占位卡（easycom 自动注册，页面里直接写 <skeleton rows="{{3}}"/>）
 ├── pages/
-│   ├── login/login.vue               # 登录（账号密码 + 服务器地址；未登录可进演示模式）
+│   ├── login/login.vue               # 登录（首页：账号密码 + 服务器地址；登录后才能操作）
 │   ├── room-select/room-select.vue   # 启动页：选择蚕房（4 栋卡片）
 │   ├── index/index.vue               # P01 实时看板（Tab）
 │   ├── history/history.vue           # P02 历史曲线（Tab）
@@ -89,6 +89,7 @@ cd ..
 node tools/check-pages.js      # 原生小程序：四件套齐全 / JSON 合法 / 插值标识符已定义
 node tools/check-handlers.js   # 原生小程序：wxml 里每个 bind*/catch* 处理函数都有实现
 node tools/smoke-test.js       # 原生小程序：数据层与业务规则冒烟（当前 61 项通过）
+node tools/check-auth.js       # 登录闸门：默认必须登录、登录体/地址、角色进权限矩阵、401 文案、过期回登录页（当前 43 项通过）
 node tools/check-clamp.js      # 病蚕/裁定/夹取作业接口客户端：信封解包、错误码映射、重试策略、幂等键、视图归一化、轮询订阅（当前 83 项通过）
 node tools/check-stub.js       # 本地桩服务自测：鉴权/信封/400/422/404/409/canConfirm/placed/图片（当前 52 项通过）
 node tools/check-e2e.js        # 全链路：真实 utils/clamp.js → 真实 HTTP → 桩服务（当前 43 项通过）
@@ -120,7 +121,7 @@ node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲�
 - 基址 `http://10.66.66.1/api`（**已含 /api**，只走 WireGuard 隧道）；联调实例可填 `http://127.0.0.1:8012/api`。
 - **按能力控按钮**：`view / hist / ack / manual / config_change / token_issue / user_manage`，不要硬编码 role。
 - 503（`mqtt_unavailable` / `publish_failed`）表示设备侧不在线，**不要自动重试**；令牌错误是 403 而不是 400。
-- 我的 → 账号：打开「启动要求登录」后，冷启动会先落到登录页；关闭则直接进演示模式（本机模拟，不发网络请求）。
+- **冷启动默认先登录**（`gate: true`，`pages/login/login` 是首页）：登录成功 → 蚕房选择 → 主流程；会话过期（401 且刷新失败）自动清会话回登录页。我的 → 账号里可临时关掉「启动要求登录」进入演示模式（本机模拟，不发网络请求）。
 - 管理员在「操作员账户」「审批令牌」两个页面里管理账号与 ACTION_TOKEN。
 
 ### 6.2 病蚕裁定 / 夹取作业（ISH）

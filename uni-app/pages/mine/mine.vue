@@ -409,6 +409,10 @@ export default mpPage({
       success: (r) => {
         if (!r.confirm) return
         auth.logout().then(() => {
+          if (auth.needsLogin()) {
+            uni.reLaunch({ url: '/pages/login/login' })
+            return
+          }
           this.refresh()
           uni.showToast({ title: '已退出登录', icon: 'success' })
         })

@@ -64,8 +64,15 @@ function networkMessage(err) {
 /* 401 刷新钩子：由 auth.js 注入 */
 let REFRESHER = null
 let refreshing = null
+/* 刷新也失败（会话彻底过期）时的钩子：由 auth.js 注入，负责清会话并回登录页 */
+let EXPIRED = null
 
 function onUnauthorized(fn) { REFRESHER = fn }
+function onExpired(fn) { EXPIRED = fn }
+function notifyExpired() {
+  if (!EXPIRED) return
+  try { EXPIRED() } catch (e) { /* 通知失败不影响把错误返回给调用方 */ }
+}
 
 function runRefresh() {
   if (!REFRESHER) return Promise.resolve(false)
@@ -144,6 +151,15 @@ function request(opts) {
     return rawRequest(o).then((res) => {
       /* 401：先刷新一次再重试 */
       if (res.ok && res.status === 401) {
+        /* 未鉴权端点（如登录）：401 是业务错误（密码错/账号停用），按响应体解包给调用方 */
+        if (o.auth === false) {
+          const out = unwrap(res, envelope)
+          out.url = res.url
+          out.method = res.method
+          out.ms = res.ms
+          if (out.ok === false && (out.code === 'HTTP_401' || !out.code)) out.code = 'UNAUTHORIZED'
+          return out
+        }
         if (allowRefresh && REFRESHER) {
           return runRefresh().then((done) => {
             if (done) {
@@ -151,6 +167,7 @@ function request(opts) {
               if (typeof REFRESHER.token === 'function') next.token = REFRESHER.token() || o.token
               return once(tries)
             }
+            notifyExpired()
             return { ok: false, code: 'UNAUTHORIZED', message: '登录已过期，请重新登录', status: 401, url: res.url, method: res.method, ms: res.ms }
           })
         }
@@ -170,4 +187,4 @@ function request(opts) {
   return once(0)
 }
 
-module.exports = { DEFAULT_TIMEOUT, request, joinUrl, withQuery, trimBase, onUnauthorized, store }
+module.exports = { DEFAULT_TIMEOUT, request, joinUrl, withQuery, trimBase, onUnauthorized, onExpired, store }

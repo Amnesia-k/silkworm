@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/room-select/room-select",
     "pages/login/login",
+    "pages/room-select/room-select",
     "pages/index/index",
     "pages/history/history",
     "pages/alerts/alerts",

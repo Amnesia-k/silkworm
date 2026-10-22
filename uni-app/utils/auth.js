@@ -21,7 +21,7 @@ const LAST_USER_KEY = 'silk_auth_user_v1'
 const LOG_MAX = 40
 
 const DEFAULT_CONFIG = {
-  gate: false,                                  /* true = 冷启动必须登录；false = 允许演示模式直接进 */
+  gate: true,                                   /* true = 冷启动必须登录（默认）；false = 允许演示模式直接进 */
   baseUrl: 'http://10.66.66.1/api',             /* 环境调控 ENV（已含 /api） */
   timeoutMs: 12000,
 }
@@ -207,6 +207,35 @@ function clearSession() {
 function rememberUser(username) { http.store(LAST_USER_KEY + '_name', username || '') }
 function lastUser() { return http.store(LAST_USER_KEY + '_name') || '' }
 
+/* 统一取运行时 API（原生小程序 / uni-app 都能用） */
+function plat() {
+  if (typeof wx !== 'undefined' && wx && typeof wx.reLaunch === 'function') return wx
+  if (typeof uni !== 'undefined' && uni && typeof uni.reLaunch === 'function') return uni
+  return null
+}
+
+/**
+ * 会话彻底过期（刷新令牌也失败）：清会话、回登录页。
+ * 只在「登录闸门开启」且当前不在登录页时跳转，带 3 s 去重，避免并发请求把页面反复 reLaunch。
+ */
+let expiredAt = 0
+function handleExpired() {
+  clearSession()
+  try { applyRole() } catch (e) {}
+  if (!CONFIG.gate) return
+  const now = Date.now()
+  if (now - expiredAt < 3000) return
+  expiredAt = now
+  try {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : []
+    const cur = pages && pages.length ? pages[pages.length - 1] : null
+    const route = cur && cur.route ? String(cur.route) : ''
+    if (route.indexOf('pages/login/login') >= 0) return
+  } catch (e) { /* 取不到当前页就照常跳 */ }
+  const w = plat()
+  if (w) w.reLaunch({ url: '/pages/login/login?expired=1' })
+}
+
 /* ---------------- 请求封装（带上 token / 401 刷新） ---------------- */
 function call(method, path, opts) {
   const o = opts || {}
@@ -231,6 +260,7 @@ function call(method, path, opts) {
 /* 注入 401 刷新：返回 true 表示已换到新 token，可重试 */
 http.onUnauthorized(() => doRefresh())
 http.onUnauthorized.token = () => token()
+http.onExpired(() => handleExpired())
 
 let refreshing = null
 function doRefresh() {
@@ -422,5 +452,6 @@ export {
   login, logout, refreshMe, rememberUser, lastUser,
   listUsers, createUser, updateUser, resetPassword,
   listTokens, issueToken, revokeToken,
-  getState, getLog, clearLog, token, refreshToken, doRefresh,
+  getState, getLog, clearLog, token, refreshToken, doRefresh, handleExpired,
+  saveSession, clearSession,
 }

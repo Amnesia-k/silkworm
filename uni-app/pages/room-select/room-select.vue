@@ -96,6 +96,8 @@ export default mpPage({
   },
 
   onShow() {
+    /* 与 onLoad 的闸门保持一致：未登录时不渲染列表，避免 reLaunch 前闪一下 */
+    if (auth.needsLogin()) return
     this.refresh()
     if (!this._tick) this._tick = () => this.refresh()
     engine.subscribe(this._tick)

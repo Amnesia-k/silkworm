@@ -69,15 +69,16 @@ export default mpPage({
     submitting: false,
   },
 
-  onLoad() {
+  onLoad(q) {
     const st = auth.getState()
     this.setData({
       gate: st.gate,
       baseUrl: st.baseUrl,
       user: st.lastUser || '',
+      error: q && q.expired ? '登录已过期，请重新登录' : '',
     })
-    // 已登录则直接进主流程（例如从「我的」里误点进来）
-    if (auth.isLoggedIn()) this.goNext()
+    // 已登录（或演示模式）直接进主流程；否则停在本页，必须登录才能操作
+    if (!auth.needsLogin()) this.goNext()
   },
 
   onUserInput(e) {
