@@ -1,0 +1,7 @@
+<view wx:if="{{show}}" class="sbar {{tone}}" data-from="{{from}}" bindtap="onTap">
+  <view class="sbar-main">
+    <view class="sbar-title">{{title}}</view>
+    <view class="sbar-detail">{{detail}}</view>
+  </view>
+  <view class="sbar-act">{{act}}</view>
+</view>

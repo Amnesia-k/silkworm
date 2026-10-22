@@ -3,37 +3,54 @@
 <!-- 加载态：骨架屏 -->
 <skeleton wx:if="{{loading}}" rows="{{3}}" hero="{{true}}" />
 
-<view class="page-body" wx:if="{{!loading && info}}">
-  <!-- 实时环境（紧凑：主数值 + 一行次要字段） -->
-  <view class="card">
-    <view class="env-head">
-      <text class="badge badge-{{levelBadge}}">{{info.outOfRange.levelName}}</text>
-      <text class="env-upd">上报 {{info.lastReportText}}</text>
-      <text class="card-more" bindtap="goControl">控制 ›</text>
+<view class="page-body oura" wx:if="{{!loading && info}}">
+  <!-- 全局安全状态条：安全锁定 / 离线自治 / 传感器失效时压在最顶部 -->
+  <safety-bar from="/pages/index/index" />
+
+  <!-- 生命体征：两个数字就是这一屏的主角 -->
+  <view class="vitals">
+    <view class="vital" bindtap="goControl">
+      <view class="vital-head">
+        <text class="vital-cap">温度</text>
+        <text class="badge {{levelBadge}}">{{info.outOfRange.levelName}}</text>
+      </view>
+      <view class="vital-num-row">
+        <text class="vital-num {{info.outOfRange.tempIn ? '' : 'is-out'}}">{{info.tempText}}</text>
+        <text class="vital-unit">℃</text>
+      </view>
+      <view class="vital-scale">
+        <view class="vs-band" style="left:{{scale.temp.l}}%; width:{{scale.temp.w}}%;"></view>
+        <view class="vs-dot {{info.outOfRange.tempIn ? '' : 'is-out'}}" style="left:{{scale.temp.dot}}%;"></view>
+      </view>
+      <view class="vital-foot">目标 {{info.target.tempText}}</view>
     </view>
 
-    <view class="env-main">
-      <view class="env-item">
-        <text class="env-value {{info.outOfRange.tempIn ? '' : 'text-danger'}}">{{info.tempText}}</text>
-        <text class="env-unit">℃</text>
-        <text class="env-label">温度 · 目标 {{info.target.tempText}} ℃</text>
+    <view class="vital" bindtap="goControl">
+      <view class="vital-head">
+        <text class="vital-cap">湿度</text>
+        <text class="vital-upd">上报 {{info.lastReportText}}</text>
       </view>
-      <view class="env-item">
-        <text class="env-value {{info.outOfRange.humiIn ? '' : 'text-danger'}}">{{info.humiText}}</text>
-        <text class="env-unit">%RH</text>
-        <text class="env-label">湿度 · 目标 {{info.target.humiText}} %RH</text>
+      <view class="vital-num-row">
+        <text class="vital-num {{info.outOfRange.humiIn ? '' : 'is-out'}}">{{info.humiText}}</text>
+        <text class="vital-unit">%RH</text>
       </view>
+      <view class="vital-scale">
+        <view class="vs-band" style="left:{{scale.humi.l}}%; width:{{scale.humi.w}}%;"></view>
+        <view class="vs-dot {{info.outOfRange.humiIn ? '' : 'is-out'}}" style="left:{{scale.humi.dot}}%;"></view>
+      </view>
+      <view class="vital-foot">目标 {{info.target.humiText}}</view>
     </view>
-
-    <view class="out-list" wx:if="{{info.outOfRange.items.length > 0}}">
-      <view class="out-item" wx:for="{{info.outOfRange.items}}" wx:key="metric">
-        <text class="dot dot-red"></text>
-        <text>{{item.metric === 'temp' ? '温度' : '湿度'}}{{item.dir === 'high' ? '偏高' : '偏低'}} {{item.value}}（限值 {{item.limit}}），已持续 {{item.dueSec}} s</text>
-      </view>
-    </view>
-
-    <view class="env-foot">露点 {{info.dewp}} ℃ ｜ WiFi {{info.wifiText}} ｜ 传感器{{info.sensorOk ? '正常' : '失效'}} ｜ 联锁 {{interlockText}} ｜ {{info.instarName}} · {{info.varietyName}}</view>
   </view>
+
+  <!-- 越限：一条带底色的 note，不是一列红字 -->
+  <view class="note" wx:if="{{info.outOfRange.items.length > 0}}">
+    <view class="note-line" wx:for="{{info.outOfRange.items}}" wx:key="metric">
+      {{item.metric === 'temp' ? '温度' : '湿度'}}{{item.dir === 'high' ? '偏高' : '偏低'}} {{item.value}}，限值 {{item.limit}}，已持续 {{item.dueSec}} 秒
+    </view>
+    <view class="note-act" bindtap="goControl">去控制 ›</view>
+  </view>
+
+  <view class="meta-line">露点 {{info.dewp}} ℃ · WiFi {{info.wifiText}} · 传感器{{info.sensorOk ? '正常' : '失效'}} · 联锁 {{interlockText}} · {{info.instarName}} · {{info.varietyName}}</view>
 
   <!-- 环境趋势：进入视口后才画出（曲线自己长出来） -->
   <view class="card chart-card" id="envChartWrap">
@@ -50,8 +67,8 @@
     </view>
     <canvas type="2d" id="envChart" class="chart"></canvas>
     <view class="legend">
-      <text class="legend-item"><text class="lg-dot lg-blue"></text>温度 ℃</text>
-      <text class="legend-item"><text class="lg-dot lg-green"></text>湿度 %RH</text>
+      <text class="legend-item"><text class="lg-dot lg-ink"></text>温度 ℃</text>
+      <text class="legend-item"><text class="lg-dot lg-sage"></text>湿度 %RH</text>
       <text class="legend-item"><text class="lg-band"></text>目标区间</text>
       <text class="legend-item"><text class="lg-dash"></text>平均温度</text>
     </view>
@@ -64,12 +81,12 @@
       <text class="mini-cap">环控设备</text>
     </view>
     <view class="mini-tile" bindtap="goAlarms">
-      <text class="mini-num {{info.alarms.active > 0 ? 'text-danger' : ''}}">{{info.alarms.active}}</text>
+      <text class="mini-num {{info.alarms.active > 0 ? 'is-alert' : ''}}">{{info.alarms.active}}</text>
       <text class="mini-cap">活跃告警</text>
     </view>
     <view class="mini-tile" bindtap="goMachine">
-      <text class="mini-num {{machineWarn ? 'text-warn' : ''}}">{{machineText}}</text>
-      <text class="mini-cap {{machineWarn ? 'text-warn' : ''}}">{{machineWarn ? '机械待干预' : '机械作业'}}</text>
+      <text class="mini-num {{machineWarn ? 'is-warn' : ''}}">{{machineText}}</text>
+      <text class="mini-cap">{{machineWarn ? '机械待干预' : '机械作业'}}</text>
     </view>
   </view>
 
@@ -84,9 +101,9 @@
       <text class="dot {{item.on ? 'dot-green' : 'dot-gray'}}"></text>
       <text class="dev-name">{{item.name}}</text>
       <text class="dev-kind">{{item.kindName}}</text>
-      <text class="badge badge-{{item.locked ? 'red' : (item.on ? 'green' : 'gray')}}">{{item.locked ? item.lockText : item.stateText}}</text>
+      <text class="badge {{item.locked ? 'badge-red' : (item.on ? 'badge-green' : 'badge-gray')}}">{{item.locked ? item.lockText : item.stateText}}</text>
     </view>
-    <view class="tip env-line">耦合工况 {{couplingText}} ｜ 服务端 {{info.serverStateName}}<block wx:if="{{info.mode === 'manual'}}"> ｜ 手动剩余 {{info.manualLeftSec}} s</block><block wx:if="{{!info.online}}"> ｜ 离线自治 {{info.offlineText}}</block></view>
+    <view class="tip env-line">耦合工况 {{couplingText}} · 服务端 {{info.serverStateName}}<block wx:if="{{info.mode === 'manual'}}"> · 手动剩余 {{info.manualLeftSec}} s</block><block wx:if="{{!info.online}}"> · 离线自治 {{info.offlineText}}</block></view>
   </view>
 
   <!-- 活跃告警 -->

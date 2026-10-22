@@ -140,7 +140,20 @@ Page({
   },
 
   /* ---------------- 人工裁定（放行 / 忽略本轮） ---------------- */
+  /** 轻点「放行」只提示手势，真正下发必须长按（防止拇指滚动误触到唯一不可逆动作） */
+  onReleaseHint() {
+    wx.showToast({ title: '长按 0.8 秒才能放行', icon: 'none', duration: 1600 })
+  },
+
   onConfirmYes(e) {
+    // 长按触发：先震一下，让手指确认「这一下真的算数」
+    if (wx.vibrateShort) {
+      try {
+        wx.vibrateShort({ type: 'heavy' })
+      } catch (err) {
+        /* 部分机型不支持，忽略 */
+      }
+    }
     this.doConfirm(e, 'yes')
   },
 
@@ -168,7 +181,7 @@ Page({
         ? '「' + item.display + '」（置信度 ' + item.confText + '，疑似虫 ' + item.count + ' 头）\n放行后服务端会立即下发夹取，机械会真实动作：抓取该箔 → 码放到传送带。'
         : '「' + item.display + '」本轮不做处理；下一轮识别仍可能重新推送。',
       confirmText: isYes ? '确认放行' : '确认忽略',
-      confirmColor: isYes ? '#ef4444' : '#3d6df2',
+      confirmColor: isYes ? '#8f1d14' : '#2454c9',
       success: (r) => {
         if (!r.confirm) return
         this.setData({ confirmingId: id })

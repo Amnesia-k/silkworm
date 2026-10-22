@@ -4,6 +4,7 @@
   "backgroundTextStyle": "light",
   "usingComponents": {
     "barn-bar": "/components/barn-bar/barn-bar",
-    "skeleton": "/components/skeleton/skeleton"
+    "skeleton": "/components/skeleton/skeleton",
+    "safety-bar": "/components/safety-bar/safety-bar"
   }
 }

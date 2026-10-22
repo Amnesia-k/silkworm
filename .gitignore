@@ -20,3 +20,6 @@ desktop.ini
 .idea/
 .vscode/
 *.log
+
+# impeccable critique 临时工作区
+.tmp-critique/

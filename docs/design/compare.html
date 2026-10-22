@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>现状 vs Oura</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#dfe3ea;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:26px 26px 10px}
+.row{display:flex;gap:26px;align-items:flex-start;justify-content:center}
+.col{width:390px}
+.hd{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}
+.hd b{font-size:15px;color:#1c1b1a}
+.hd span{font-size:11.5px;color:#6b7280}
+.shot{width:390px;height:844px;border-radius:26px;overflow:hidden;background:#fff;box-shadow:0 14px 40px rgba(15,23,42,.16),0 0 0 8px #fff,0 0 0 9px #cfd6e0}
+iframe{width:390px;height:844px;border:0;display:block}
+.tip{max-width:806px;margin:16px auto 0;font-size:11.5px;color:#4b5563;line-height:1.7;text-align:center}
+</style></head><body>
+<div class="row">
+  <div class="col"><div class="hd"><b>现状</b><span>app.wxss + index.wxss 真实样式</span></div><div class="shot"><iframe src="_cur.html"></iframe></div></div>
+  <div class="col"><div class="hd"><b>Oura 版</b><span>同一份数据、同一套组件</span></div><div class="shot"><iframe src="_oura.html"></iframe></div></div>
+</div>
+<div class="tip">两栏内容完全相同，只有视觉语言不同。渲染方式：按 pages/index/index.wxml 的真实结构与 app.wxss / index.wxss 的真实样式还原（rpx 按 390dp 换算），曲线为等价 SVG；非真机截图。</div>
+</body></html>

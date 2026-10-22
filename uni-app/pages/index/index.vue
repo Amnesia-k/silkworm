@@ -5,37 +5,54 @@
     <!-- 加载态：骨架屏 -->
     <skeleton v-if="loading" :rows="3" :hero="true" />
 
-    <view v-if="!loading && info" class="page-body">
-      <!-- 实时环境（紧凑：主数值 + 一行次要字段） -->
-      <view class="card">
-        <view class="env-head">
-          <text :class="'badge badge-' + (levelBadge)">{{info.outOfRange.levelName}}</text>
-          <text class="env-upd">上报 {{info.lastReportText}}</text>
-          <text class="card-more" @tap="goControl">控制 ›</text>
+    <view v-if="!loading && info" class="page-body oura">
+      <!-- 全局安全状态条：安全锁定 / 离线自治 / 传感器失效时压在最顶部 -->
+      <safety-bar from="/pages/index/index" />
+
+      <!-- 生命体征：两个数字就是这一屏的主角 -->
+      <view class="vitals">
+        <view class="vital" @tap="goControl">
+          <view class="vital-head">
+            <text class="vital-cap">温度</text>
+            <text :class="'badge ' + (levelBadge)">{{info.outOfRange.levelName}}</text>
+          </view>
+          <view class="vital-num-row">
+            <text :class="'vital-num ' + (info.outOfRange.tempIn ? '' : 'is-out')">{{info.tempText}}</text>
+            <text class="vital-unit">℃</text>
+          </view>
+          <view class="vital-scale">
+            <view class="vs-band" :style="'left:' + (scale.temp.l) + '%; width:' + (scale.temp.w) + '%;'"></view>
+            <view :class="'vs-dot ' + (info.outOfRange.tempIn ? '' : 'is-out')" :style="'left:' + (scale.temp.dot) + '%;'"></view>
+          </view>
+          <view class="vital-foot">目标 {{info.target.tempText}}</view>
         </view>
 
-        <view class="env-main">
-          <view class="env-item">
-            <text :class="'env-value ' + (info.outOfRange.tempIn ? '' : 'text-danger')">{{info.tempText}}</text>
-            <text class="env-unit">℃</text>
-            <text class="env-label">温度 · 目标 {{info.target.tempText}} ℃</text>
+        <view class="vital" @tap="goControl">
+          <view class="vital-head">
+            <text class="vital-cap">湿度</text>
+            <text class="vital-upd">上报 {{info.lastReportText}}</text>
           </view>
-          <view class="env-item">
-            <text :class="'env-value ' + (info.outOfRange.humiIn ? '' : 'text-danger')">{{info.humiText}}</text>
-            <text class="env-unit">%RH</text>
-            <text class="env-label">湿度 · 目标 {{info.target.humiText}} %RH</text>
+          <view class="vital-num-row">
+            <text :class="'vital-num ' + (info.outOfRange.humiIn ? '' : 'is-out')">{{info.humiText}}</text>
+            <text class="vital-unit">%RH</text>
           </view>
+          <view class="vital-scale">
+            <view class="vs-band" :style="'left:' + (scale.humi.l) + '%; width:' + (scale.humi.w) + '%;'"></view>
+            <view :class="'vs-dot ' + (info.outOfRange.humiIn ? '' : 'is-out')" :style="'left:' + (scale.humi.dot) + '%;'"></view>
+          </view>
+          <view class="vital-foot">目标 {{info.target.humiText}}</view>
         </view>
-
-        <view v-if="info.outOfRange.items.length > 0" class="out-list">
-          <view v-for="(item, index) in info.outOfRange.items" :key="item.metric" class="out-item">
-            <text class="dot dot-red"></text>
-            <text>{{item.metric === 'temp' ? '温度' : '湿度'}}{{item.dir === 'high' ? '偏高' : '偏低'}} {{item.value}}（限值 {{item.limit}}），已持续 {{item.dueSec}} s</text>
-          </view>
-        </view>
-
-        <view class="env-foot">露点 {{info.dewp}} ℃ ｜ WiFi {{info.wifiText}} ｜ 传感器{{info.sensorOk ? '正常' : '失效'}} ｜ 联锁 {{interlockText}} ｜ {{info.instarName}} · {{info.varietyName}}</view>
       </view>
+
+      <!-- 越限：一条带底色的 note，不是一列红字 -->
+      <view v-if="info.outOfRange.items.length > 0" class="note">
+        <view v-for="(item, index) in info.outOfRange.items" :key="item.metric" class="note-line">
+          {{item.metric === 'temp' ? '温度' : '湿度'}}{{item.dir === 'high' ? '偏高' : '偏低'}} {{item.value}}，限值 {{item.limit}}，已持续 {{item.dueSec}} 秒
+        </view>
+        <view class="note-act" @tap="goControl">去控制 ›</view>
+      </view>
+
+      <view class="meta-line">露点 {{info.dewp}} ℃ · WiFi {{info.wifiText}} · 传感器{{info.sensorOk ? '正常' : '失效'}} · 联锁 {{interlockText}} · {{info.instarName}} · {{info.varietyName}}</view>
 
       <!-- 环境趋势：进入视口后才画出（曲线自己长出来） -->
       <view class="card chart-card" id="envChartWrap">
@@ -52,8 +69,8 @@
         </view>
         <canvas type="2d" id="envChart" class="chart"></canvas>
         <view class="legend">
-          <text class="legend-item"><text class="lg-dot lg-blue"></text>温度 ℃</text>
-          <text class="legend-item"><text class="lg-dot lg-green"></text>湿度 %RH</text>
+          <text class="legend-item"><text class="lg-dot lg-ink"></text>温度 ℃</text>
+          <text class="legend-item"><text class="lg-dot lg-sage"></text>湿度 %RH</text>
           <text class="legend-item"><text class="lg-band"></text>目标区间</text>
           <text class="legend-item"><text class="lg-dash"></text>平均温度</text>
         </view>
@@ -66,12 +83,12 @@
           <text class="mini-cap">环控设备</text>
         </view>
         <view class="mini-tile" @tap="goAlarms">
-          <text :class="'mini-num ' + (info.alarms.active > 0 ? 'text-danger' : '')">{{info.alarms.active}}</text>
+          <text :class="'mini-num ' + (info.alarms.active > 0 ? 'is-alert' : '')">{{info.alarms.active}}</text>
           <text class="mini-cap">活跃告警</text>
         </view>
         <view class="mini-tile" @tap="goMachine">
-          <text :class="'mini-num ' + (machineWarn ? 'text-warn' : '')">{{machineText}}</text>
-          <text :class="'mini-cap ' + (machineWarn ? 'text-warn' : '')">{{machineWarn ? '机械待干预' : '机械作业'}}</text>
+          <text :class="'mini-num ' + (machineWarn ? 'is-warn' : '')">{{machineText}}</text>
+          <text class="mini-cap">{{machineWarn ? '机械待干预' : '机械作业'}}</text>
         </view>
       </view>
 
@@ -86,9 +103,9 @@
           <text :class="'dot ' + (item.on ? 'dot-green' : 'dot-gray')"></text>
           <text class="dev-name">{{item.name}}</text>
           <text class="dev-kind">{{item.kindName}}</text>
-          <text :class="'badge badge-' + (item.locked ? 'red' : (item.on ? 'green' : 'gray'))">{{item.locked ? item.lockText : item.stateText}}</text>
+          <text :class="'badge ' + (item.locked ? 'badge-red' : (item.on ? 'badge-green' : 'badge-gray'))">{{item.locked ? item.lockText : item.stateText}}</text>
         </view>
-        <view class="tip env-line">耦合工况 {{couplingText}} ｜ 服务端 {{info.serverStateName}}<template v-if="info.mode === 'manual'"> ｜ 手动剩余 {{info.manualLeftSec}} s</template><template v-if="!info.online"> ｜ 离线自治 {{info.offlineText}}</template></view>
+        <view class="tip env-line">耦合工况 {{couplingText}} · 服务端 {{info.serverStateName}}<template v-if="info.mode === 'manual'"> · 手动剩余 {{info.manualLeftSec}} s</template><template v-if="!info.online"> · 离线自治 {{info.offlineText}}</template></view>
       </view>
 
       <!-- 活跃告警 -->
@@ -133,6 +150,22 @@ import * as chart from '@/utils/chart.js'
 import * as clamp from '@/utils/clamp.js'
 import * as live from '@/utils/live.js'
 
+/**
+ * 目标区间刻度尺：把「目标 24.0~25.0 ℃」画成一段尺子
+ * 刻度范围取「区间两端各留 1 个单位」与「当前值」的并集，当前值偏得越远，点越靠边
+ * @returns {{l:number,w:number,dot:number}} 百分比（0~100）
+ */
+function scaleOf(lo, hi, v) {
+  const min = Math.min(Number(lo) - 1, Number(v))
+  const max = Math.max(Number(hi) + 1, Number(v))
+  const span = max - min || 1
+  const pct = (x) => Math.round(((Number(x) - min) / span) * 1000) / 10
+  const l = Math.max(0, Math.min(100, pct(lo)))
+  const w = Math.max(2, Math.min(100 - l, pct(hi) - pct(lo)))
+  const dot = Math.max(0, Math.min(100, pct(v)))
+  return { l, w, dot }
+}
+
 export default mpPage({
   data: {
     loading: true,
@@ -148,6 +181,11 @@ export default mpPage({
     /** 待裁定病蚕数（后端接口，见 utils/clamp.js） */
     clampPending: 0,
     chartStats: null,
+    /** 目标区间刻度尺的百分比位置（温度 / 湿度） */
+    scale: {
+      temp: { l: 40, w: 20, dot: 50 },
+      humi: { l: 40, w: 20, dot: 50 },
+    },
   },
 
   onLoad() {
@@ -259,6 +297,10 @@ export default mpPage({
       levelBadge: level === 'normal' ? 'badge-green' : (level === 'light' ? 'badge-orange' : 'badge-red'),
       machineText: ms ? (ms.on + '/' + ms.total) : '--',
       machineWarn: ms ? (ms.outOfPreset + clampPending) > 0 : clampPending > 0,
+      scale: {
+        temp: scaleOf(s.target.tMin, s.target.tMax, s.temp),
+        humi: scaleOf(s.target.hMin, s.target.hMax, s.humi),
+      },
     })
 
     // tabBar 告警红点（P01：查看告警红点提示）
@@ -376,116 +418,201 @@ export default mpPage({
 
 <style>
 /* index.wxss（与原生小程序工程逐字节一致） */
-.env-main {
-  display: flex;
-  align-items: flex-end;
-  margin-bottom: 8rpx;
+/* pages/index —— 看板（Oura 方向打样）
+ *
+ * 这一页把「两个数字」当主角：暖纸底、无卡片、发丝线分区、衬线大数字、
+ * 数字下方一条目标区间刻度尺。状态色只作文字，不再用彩色胶囊。
+ */
+
+page {
+  background: #f7f1e8;
 }
 
-.env-item {
-  margin-right: 48rpx;
+.oura {
+  color: #1c1b1a;
 }
 
-.env-state {
-  margin-right: 0;
-  margin-left: auto;
-  text-align: right;
+/* ---------------- 卡片退成「分段」 ---------------- */
+.oura .card {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0 36rpx;
+  padding: 36rpx 0;
+  border-top: 1rpx solid #e1dcd3;
 }
 
-.env-value {
-  font-size: 64rpx;
-  font-weight: 700;
-  line-height: 1;
-  color: #1f2937;
+.oura .card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1c1b1a;
 }
 
-.env-unit {
+.oura .card-sub {
+  color: #6b6257;
+}
+
+.oura .card-more {
+  color: #224228;
+  font-weight: 600;
+}
+
+.oura .badge {
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
   font-size: 24rpx;
-  color: #8b95a7;
-  margin-left: 6rpx;
+  font-weight: 600;
 }
 
-.env-label {
-  display: block;
-  font-size: 22rpx;
-  color: #8b95a7;
-  margin-top: 8rpx;
+.oura .badge-green,
+.oura .mode-green { color: #224228; }
+.oura .badge-orange,
+.oura .mode-orange { color: #8a5a12; }
+.oura .badge-red,
+.oura .mode-red { color: #8f1d14; }
+.oura .badge-gray,
+.oura .mode-gray { color: #6b6257; }
+.oura .badge-blue,
+.oura .mode-blue { color: #2454c9; }
+
+.oura .dot-green { background: #224228; }
+.oura .dot-gray { background: #b3aa9c; }
+
+.oura .tip {
+  color: #6b6257;
 }
 
-.env-state .env-label {
-  margin-top: 10rpx;
+.oura .empty {
+  color: #6b6257;
 }
 
-.out-list {
+/* ---------------- 生命体征 ---------------- */
+.vitals {
+  display: flex;
+  padding: 12rpx 36rpx 4rpx;
+}
+
+.vital {
+  flex: 1;
+  min-width: 0;
+  padding: 24rpx 0 28rpx;
+}
+
+.vital + .vital {
+  border-left: 1rpx solid #e1dcd3;
+  padding-left: 34rpx;
+}
+
+.vital-head {
+  display: flex;
+  align-items: center;
+}
+
+.vital-cap {
+  font-size: 24rpx;
+  letter-spacing: 3rpx;
+  color: #6b6257;
+}
+
+.vital-upd {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #6b6257;
+}
+
+.vital-num-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 6rpx;
+}
+
+.vital-num {
+  font-family: Georgia, "Times New Roman", "Songti SC", serif;
+  font-size: 104rpx;
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: -3rpx;
+  color: #1c1b1a;
+}
+
+.vital-num.is-out {
+  color: #8f1d14;
+}
+
+.vital-unit {
+  font-size: 26rpx;
+  color: #6b6257;
+  margin-left: 8rpx;
+}
+
+/* 目标区间刻度尺：浅色段＝目标区间，竖线＝当前值 */
+.vital-scale {
+  position: relative;
+  height: 10rpx;
+  margin-top: 16rpx;
+  background: #e8e1d5;
+  border-radius: 999rpx;
+}
+
+.vs-band {
+  position: absolute;
+  top: 0;
+  height: 10rpx;
+  background: #ced4b8;
+  border-radius: 999rpx;
+}
+
+.vs-dot {
+  position: absolute;
+  top: -6rpx;
+  width: 6rpx;
+  height: 22rpx;
+  margin-left: -3rpx;
+  background: #224228;
+  border-radius: 3rpx;
+}
+
+.vs-dot.is-out {
+  background: #8f1d14;
+}
+
+.vital-foot {
   margin-top: 12rpx;
-  background: rgba(239, 68, 68, 0.06);
-  border-radius: 12rpx;
-  padding: 12rpx 16rpx;
+  font-size: 24rpx;
+  color: #6b6257;
 }
 
-.out-item {
-  font-size: 22rpx;
-  color: #ef4444;
+/* ---------------- 越限提示（暖底 note，无左边框） ---------------- */
+.note {
+  margin: 6rpx 36rpx 0;
+  padding: 20rpx 24rpx;
+  background: rgba(175, 117, 27, 0.12);
+  border-radius: 6rpx;
+}
+
+.note-line {
+  font-size: 24rpx;
+  color: #7a4f0e;
+  line-height: 1.6;
+}
+
+.note-act {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #8a5a12;
+  padding: 30rpx 0 24rpx;
+}
+
+.meta-line {
+  margin: 22rpx 36rpx 0;
+  font-size: 24rpx;
+  color: #6b6257;
   line-height: 1.7;
 }
 
-.dev-row {
-  display: flex;
-  align-items: center;
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid #f2f5fa;
-}
-
-.dev-row:last-child {
-  border-bottom: none;
-}
-
-.dev-main {
-  flex: 1;
-  min-width: 0;
-  margin-left: 6rpx;
-}
-
-.dev-name {
-  font-size: 28rpx;
-  color: #1f2937;
-}
-
-.dev-meta {
-  display: block;
-  font-size: 22rpx;
-  color: #8b95a7;
-  margin-top: 4rpx;
-}
-
-.env-head {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16rpx;
-}
-
-.env-upd {
-  margin-left: 12rpx;
-  font-size: 22rpx;
-  color: #a8b1c0;
-}
-
-.env-foot {
-  margin-top: 14rpx;
-  padding-top: 14rpx;
-  border-top: 1rpx solid #f2f5fa;
-  font-size: 21rpx;
-  color: #8b95a7;
-  line-height: 1.5;
-}
-
-.env-line {
-  margin-top: 14rpx;
-  padding-top: 12rpx;
-  border-top: 1rpx solid #f2f5fa;
-}
-
-/* 曲线：放大 + 圆角底色，做成页面视觉重心 */
+/* ---------------- 曲线 ---------------- */
 .chart-card {
   padding-bottom: 20rpx;
 }
@@ -495,13 +622,12 @@ export default mpPage({
   height: 500rpx;
 }
 
-/* 曲线下方一行统计（最高 / 最低 / 平均 / 越限），替代原来的一堆小字 */
 .chart-stats {
   display: flex;
   flex-wrap: wrap;
-  margin: 4rpx 0 6rpx;
-  font-size: 21rpx;
-  color: #8b95a7;
+  margin: 4rpx 0 8rpx;
+  font-size: 24rpx;
+  color: #6b6257;
 }
 
 .cs-item {
@@ -509,60 +635,18 @@ export default mpPage({
 }
 
 .cs-num {
-  font-size: 24rpx;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: Georgia, "Times New Roman", "Songti SC", serif;
+  font-size: 30rpx;
+  color: #1c1b1a;
   margin: 0 2rpx;
-}
-
-/* 三格速览 */
-.mini-grid {
-  display: flex;
-  margin: 0 24rpx;
-}
-
-.mini-tile {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 16rpx;
-  padding: 22rpx 8rpx;
-  margin-right: 14rpx;
-  text-align: center;
-  box-shadow: 0 2rpx 12rpx rgba(31, 41, 55, 0.04);
-}
-
-.mini-tile:last-child {
-  margin-right: 0;
-}
-
-.mini-num {
-  display: block;
-  font-size: 38rpx;
-  font-weight: 700;
-  color: #1f2937;
-  line-height: 1.2;
-}
-
-.mini-cap {
-  display: block;
-  font-size: 21rpx;
-  color: #8b95a7;
-  margin-top: 6rpx;
-}
-
-.dev-kind {
-  font-size: 21rpx;
-  color: #a8b1c0;
-  margin-left: 10rpx;
-  margin-right: auto;
 }
 
 .legend {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 10rpx;
-  font-size: 20rpx;
-  color: #8b95a7;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #6b6257;
 }
 
 .legend-item {
@@ -577,16 +661,15 @@ export default mpPage({
   margin-right: 6rpx;
 }
 
-.lg-blue { background: #3d6df2; }
-.lg-green { background: #10b981; }
-.lg-red { background: #ef4444; }
+.lg-ink { background: #224228; }
+.lg-sage { background: #849671; }
 
 .lg-band {
   display: inline-block;
   width: 22rpx;
   height: 12rpx;
   border-radius: 3rpx;
-  background: rgba(16, 185, 129, 0.35);
+  background: #ced4b8;
   margin-right: 6rpx;
 }
 
@@ -594,14 +677,92 @@ export default mpPage({
   display: inline-block;
   width: 22rpx;
   height: 0;
-  border-top: 2rpx dashed #b8c1d1;
+  border-top: 2rpx dashed #af751b;
   margin-right: 6rpx;
   vertical-align: middle;
 }
 
+/* ---------------- 三格速览（发丝线分隔，无卡片） ---------------- */
+.mini-grid {
+  display: flex;
+  margin: 28rpx 36rpx 0;
+  border-top: 1rpx solid #e1dcd3;
+  border-bottom: 1rpx solid #e1dcd3;
+}
+
+.mini-tile {
+  flex: 1;
+  text-align: center;
+  padding: 26rpx 4rpx;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin-right: 0;
+}
+
+.mini-tile + .mini-tile {
+  border-left: 1rpx solid #e1dcd3;
+}
+
+.mini-num {
+  display: block;
+  font-family: Georgia, "Times New Roman", "Songti SC", serif;
+  font-size: 52rpx;
+  font-weight: 400;
+  color: #1c1b1a;
+  line-height: 1.15;
+}
+
+.mini-num.is-alert {
+  color: #8f1d14;
+}
+
+.mini-num.is-warn {
+  color: #8a5a12;
+}
+
+.mini-cap {
+  display: block;
+  font-size: 24rpx;
+  color: #6b6257;
+  margin-top: 4rpx;
+}
+
+/* ---------------- 设备行 ---------------- */
+.dev-row {
+  display: flex;
+  align-items: center;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #ece5d8;
+}
+
+.dev-row:last-child {
+  border-bottom: none;
+}
+
+.dev-name {
+  font-size: 28rpx;
+  color: #1c1b1a;
+  margin-left: 6rpx;
+}
+
+.dev-kind {
+  font-size: 24rpx;
+  color: #6b6257;
+  margin-left: 10rpx;
+  margin-right: auto;
+}
+
+.env-line {
+  margin-top: 18rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #ece5d8;
+}
+
+/* ---------------- 告警 ---------------- */
 .alarm-row {
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid #f2f5fa;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #ece5d8;
 }
 
 .alarm-row:last-child {
@@ -615,30 +776,25 @@ export default mpPage({
 
 .alarm-code {
   margin-left: 12rpx;
-  font-size: 22rpx;
-  color: #5b6474;
+  font-size: 24rpx;
+  color: #6b6257;
 }
 
 .alarm-time {
   margin-left: auto;
-  font-size: 20rpx;
-  color: #a8b1c0;
+  font-size: 24rpx;
+  color: #6b6257;
 }
 
 .alarm-text {
-  font-size: 26rpx;
-  color: #1f2937;
+  font-size: 28rpx;
+  color: #1c1b1a;
   margin-top: 8rpx;
   line-height: 1.6;
 }
 
-.alarm-src {
-  font-size: 20rpx;
-  color: #a8b1c0;
-  margin-top: 6rpx;
-}
-
 .foot-tip {
-  margin: 20rpx 24rpx;
+  margin: 24rpx 36rpx;
+  color: #6b6257;
 }
 </style>

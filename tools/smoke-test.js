@@ -40,6 +40,16 @@ function ok(cond, label, extra) {
 }
 function section(t) { console.log('\n== ' + t + ' ==') }
 
+/** 把蚕房拉回目标区间中点、必要时按管理员流程解除安全锁定 —— 用例结果不应依赖本机时钟 */
+function normalize(barn) {
+  const b = data.getBarn(barn)
+  const tg = data.getStatusSummary(barn).target
+  b.temp = (tg.tMin + tg.tMax) / 2
+  b.humi = (tg.hMin + tg.hMax) / 2
+  if (b.mode === 'safe_lock') engine.unlockSafety(barn, '冒烟测试：用例前复位环境')
+  return b
+}
+
 /* ---------------- 初始化 ---------------- */
 section('初始化')
 const barns = data.getBarnList()
@@ -90,6 +100,7 @@ const after = data.findAlarm(active[0].id)
 ok(after && after.alarm.acked === true, '确认状态已落库 acked=' + (after && after.alarm.acked))
 
 section('手动控制 + 审批令牌（P04）')
+normalize('barn01')
 const token = engine.issueToken('barn01', 'fan01', 'toggle', '冒烟测试')
 const tkId = token && token.token ? token.token.id : ''
 ok(token && token.ok !== false && !!tkId, '管理员签发令牌: ' + tkId)
@@ -133,6 +144,7 @@ section('离线自治与维护模式（9.1 / 7.2）')
 }
 const b3 = data.getBarn('barn03')
 ok(b3.mode === 'offline' && b3.online === false, '3 号蚕房离线自治 mode=' + b3.mode)
+normalize('barn01')
 const maint = engine.switchMaintenance('barn01', true)
 ok(maint.ok !== false, '进入维护模式: ' + maint.message + ' → mode=' + data.getBarn('barn01').mode)
 engine.switchMaintenance('barn01', false)
