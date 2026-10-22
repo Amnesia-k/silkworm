@@ -100,7 +100,7 @@ node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲�
 
 > 组件按 uni-app 的 **easycom** 约定自动注册（`pages.json` 里 `easycom.autoscan: true`，组件放在 `components/<name>/<name>.vue`），所以页面模板里直接写 `<barn-bar/>`、`<skeleton/>`，不需要 import 或 `components: {}`。
 
-**验证边界（如实说明）**：本机没有 HBuilderX / uni-app 编译工具链，所以**没有跑过真实的 uni-app 编译与真机运行**。已完成的是：① `@vue/compiler-sfc` 对每个 `.vue` 做真实 SFC 解析与模板/脚本编译（19 个文件 0 失败）；② 用 `@vue/server-renderer` 在 Node 里对 15 个页面 + 3 个组件做真实渲染（生命周期 `onLoad/onShow/onReady` 与组件 `attached` 均触发，canvas 绘图调用约 2170 次，0 失败），因此模板表达式、null 安全、事件方法存在性、canvas 代码路径都已实际执行过。首次编译若报错，多半是平台差异，请把报错发我。
+**验证边界（如实说明）**：本机没有 HBuilderX / uni-app 编译工具链，所以**没有跑过真实的 uni-app 编译与真机运行**。已完成的是：① `@vue/compiler-sfc` 对每个 `.vue` 做真实 SFC 解析与模板/脚本编译（19 个文件 0 失败）；② 用 `@vue/server-renderer` 在 Node 里对 15 个页面 + 3 个组件做真实渲染（生命周期 `onLoad/onShow/onReady` 与组件 `attached` 均触发，canvas 绘图调用约 2190 次，0 失败），因此模板表达式、null 安全、事件方法存在性、canvas 代码路径都已实际执行过。首次编译若报错，多半是平台差异，请把报错发我。
 
 > 渲染校验里组件用 `app.component()` 手动注册，等价于 easycom 的扫描结果；页面骨架屏的 420 ms 保底展示在同步 SSR 下不会到点，harness 会直接渲染页面主体（骨架屏组件本身单独渲染校验）。
 
@@ -164,8 +164,13 @@ node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲�
 8. 演示数据在 `utils/data.js` 中以「模拟运行态」方式生成，`utils/engine.js` 按规格书的 2 s 采样 / 10 s 控制 / 90 s 心跳等节奏驱动；真实闭环在 ESP32 固件 L2 层，前端只做展示与人工操作入口。
 9. **实机对接**：环境数据走 `utils/http.js + auth.js + env.js + live.js`（登录后 5 s 轮询 realtime，写入 `utils/data.js` 覆盖层，页面代码不用改）；病蚕/夹取走 `utils/clamp.js`。旧的 `utils/gateway.js` 预留层已删除。后端需实现的接口、报文与错误码见 `docs/实机对接接口.md`（第 11、12 节）；APP 端如要换 MQTT/网关盒，只需替换 `utils/http.js` 的 `request()` 传输实现。
 
-## 八、设计方向（Oura，已落地两页）
+## 八、设计评审与 P0 修复
 
-经过一次完整 critique（23/40，判定 category-interchangeable）后，整站视觉语言定为 **Oura 方向**：暖纸底 `#f7f1e8`、桑绿三阶（forest `#224228` / olive `#5c6f5d` / sage `#849671`）、金色警戒、单一操作蓝 `#2454c9`、发丝线分区取代卡片、数字用衬线。**看板 `pages/index` 与机械 `pages/machine` 已完成打样**，其余 13 页待铺（顺序与做法见 `docs/设计规范-Oura方向.md`）。
+用 `impeccable` 做过一次完整 critique（双代理：设计评审 + 检测器/几何实测），得分 **23/40**，判定 category-interchangeable。评审快照在 `.impeccable/critique/`。
 
-同时落了三条 P0：① 新增 `components/safety-bar`，安全锁定/离线/传感器失效压到页面最顶部；② 病蚕「放行」改为整条实底红 + 长按 0.8 s + 震动，忽略降为文字链；③ 全局阅读字号下限 24rpx、可点元素下限 88rpx、状态色改用深值（橙 `#b45309` / 绿 `#047857` / 红 `#b3261e`）。
+评审后只落了三项 P0 修复，**视觉方向保持原样**（曾按 Oura 方向打过两页样，因观感不合适已整体回滚）：
+
+1. **安全状态条**：新增 `components/safety-bar`，把「安全锁定 / 离线自治 / 传感器失效」从页面深处提到页面最顶部，整条实底白字，点一下跳到控制页。看板与机械页已接。
+2. **病蚕放行**：原来「放行 / 忽略」是两个等权小按钮（30.4 px，绿色）。现在放行是整条实底红 `#8f1d14` + **长按 0.8 s** + 震动，副标题写明「将下发夹取并码垛」；忽略降为一行文字链，避免误触导致机械真动。
+3. **可读性与触达**：全局阅读字号下限 24rpx；可点元素（主按钮、次按钮、chip、卡片右上「更多 ›」）热区下限 88rpx；状态色改用满足 4.5:1 的深值（橙 `#b45309`、绿 `#047857`、红 `#b3261e`、次要文字 `#6b7280`）；主按钮由渐变改实底，避免右端白字只有 3.16:1。
+

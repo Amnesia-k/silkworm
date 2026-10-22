@@ -45,13 +45,7 @@ export default {
 
 <style>
 /* app.wxss（与原生小程序工程逐字节一致） */
-/* app.wxss —— 全局样式
- *
- * 可读性基线（critique P0-3）：
- *   - 阅读型文字不小于 24rpx（≈12.5px），状态色一律取深色（≥4.5:1）
- *   - 橙 #b45309 / 绿 #047857 / 红 #b3261e / 蓝 #2454c9 只在浅底上作文字色
- *   - 可点元素最小 88rpx（≈44px）高
- */
+/* app.wxss —— 全局样式（配色沿用养蚕设备管理系统：主蓝 #3d6df2 / 绿 #047857 / 橙 #b45309 / 红 #b3261e） */
 
 page {
   background: #f4f6f9;
@@ -95,8 +89,8 @@ page {
 .card-more {
   margin-left: auto;
   font-size: 26rpx;
-  color: #2454c9;
-  /* 视觉上是一行小字，点击高度撑到 88rpx */
+  color: #3d6df2;
+  /* 视觉上仍是一行小字，热区撑到 88rpx */
   padding: 26rpx 0 26rpx 24rpx;
   margin-top: -26rpx;
   margin-bottom: -26rpx;
@@ -114,14 +108,14 @@ page {
   padding: 4rpx 14rpx;
   border-radius: 999rpx;
   font-size: 24rpx;
-  line-height: 34rpx;
+  line-height: 36rpx;
 }
 
-.badge-blue { background: rgba(36, 84, 201, 0.10); color: #2454c9; }
-.badge-green { background: rgba(4, 120, 87, 0.10); color: #047857; }
-.badge-orange { background: rgba(180, 83, 9, 0.12); color: #b45309; }
-.badge-red { background: rgba(179, 38, 30, 0.10); color: #b3261e; }
-.badge-gray { background: rgba(107, 114, 128, 0.12); color: #5b6474; }
+.badge-blue { background: rgba(61, 109, 242, 0.12); color: #3d6df2; }
+.badge-green { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.badge-orange { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.badge-red { background: rgba(239, 68, 68, 0.12); color: #b3261e; }
+.badge-gray { background: rgba(139, 149, 167, 0.14); color: #6b7280; }
 
 .dot {
   display: inline-block;
@@ -135,19 +129,19 @@ page {
 .dot-green { background: #047857; }
 .dot-orange { background: #b45309; }
 .dot-red { background: #b3261e; }
-.dot-gray { background: #8b95a7; }
-.dot-blue { background: #2454c9; }
+.dot-gray { background: #c3cbd8; }
+.dot-blue { background: #3d6df2; }
 
-/* 控制模式配色（与 spec.MODES.tone 对应） */
-.mode-green { background: rgba(4, 120, 87, 0.10); color: #047857; }
-.mode-orange { background: rgba(180, 83, 9, 0.12); color: #b45309; }
-.mode-blue { background: rgba(36, 84, 201, 0.10); color: #2454c9; }
-.mode-red { background: rgba(179, 38, 30, 0.10); color: #b3261e; }
-.mode-gray { background: rgba(107, 114, 128, 0.12); color: #5b6474; }
+/* 控制模式配色（规格书 7.2，与 spec.MODES.tone 对应） */
+.mode-green { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.mode-orange { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.mode-blue { background: rgba(61, 109, 242, 0.12); color: #3d6df2; }
+.mode-red { background: rgba(239, 68, 68, 0.12); color: #b3261e; }
+.mode-gray { background: rgba(139, 149, 167, 0.14); color: #6b7280; }
 
 /* ---------------- 按钮 ---------------- */
 .btn-primary {
-  background: #2454c9;
+  background: #3d6df2;
   color: #ffffff;
   border-radius: 999rpx;
   text-align: center;
@@ -166,8 +160,8 @@ page {
 
 .btn-ghost {
   background: #ffffff;
-  color: #2454c9;
-  border: 1rpx solid rgba(36, 84, 201, 0.45);
+  color: #3d6df2;
+  border: 1rpx solid rgba(61, 109, 242, 0.4);
   border-radius: 999rpx;
   text-align: center;
   font-size: 28rpx;
@@ -312,8 +306,8 @@ page {
 }
 
 .chip-on {
-  background: rgba(36, 84, 201, 0.10);
-  color: #2454c9;
+  background: rgba(61, 109, 242, 0.12);
+  color: #3d6df2;
   font-weight: 600;
 }
 
@@ -374,7 +368,7 @@ page {
 
 /* ---------------- 头部渐变 hero ---------------- */
 .hero {
-  background: linear-gradient(135deg, #1e46ad 0%, #2454c9 60%, #2a5bd7 100%);
+  background: linear-gradient(135deg, #1f4fd0 0%, #3d6df2 100%);
   padding: 32rpx 32rpx 40rpx;
   color: #ffffff;
 }
@@ -386,7 +380,7 @@ page {
 
 .hero-sub {
   font-size: 24rpx;
-  opacity: 0.92;
+  opacity: 0.85;
   margin-top: 6rpx;
 }
 
@@ -407,7 +401,7 @@ page {
 
 .hero-metric-label {
   font-size: 24rpx;
-  opacity: 0.92;
+  opacity: 0.85;
   margin-top: 4rpx;
 }
 
@@ -446,6 +440,6 @@ page {
 .text-warn { color: #b45309; }
 .text-danger { color: #b3261e; }
 .text-ok { color: #047857; }
-.text-primary { color: #2454c9; }
+.text-primary { color: #3d6df2; }
 .text-sub { color: #6b7280; }
 </style>

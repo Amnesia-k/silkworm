@@ -15,22 +15,6 @@ const chart = require('../../utils/chart.js')
 const clamp = require('../../utils/clamp.js')
 const live = require('../../utils/live.js')
 
-/**
- * 目标区间刻度尺：把「目标 24.0~25.0 ℃」画成一段尺子
- * 刻度范围取「区间两端各留 1 个单位」与「当前值」的并集，当前值偏得越远，点越靠边
- * @returns {{l:number,w:number,dot:number}} 百分比（0~100）
- */
-function scaleOf(lo, hi, v) {
-  const min = Math.min(Number(lo) - 1, Number(v))
-  const max = Math.max(Number(hi) + 1, Number(v))
-  const span = max - min || 1
-  const pct = (x) => Math.round(((Number(x) - min) / span) * 1000) / 10
-  const l = Math.max(0, Math.min(100, pct(lo)))
-  const w = Math.max(2, Math.min(100 - l, pct(hi) - pct(lo)))
-  const dot = Math.max(0, Math.min(100, pct(v)))
-  return { l, w, dot }
-}
-
 Page({
   data: {
     loading: true,
@@ -46,11 +30,6 @@ Page({
     /** 待裁定病蚕数（后端接口，见 utils/clamp.js） */
     clampPending: 0,
     chartStats: null,
-    /** 目标区间刻度尺的百分比位置（温度 / 湿度） */
-    scale: {
-      temp: { l: 40, w: 20, dot: 50 },
-      humi: { l: 40, w: 20, dot: 50 },
-    },
   },
 
   onLoad() {
@@ -162,10 +141,6 @@ Page({
       levelBadge: level === 'normal' ? 'badge-green' : (level === 'light' ? 'badge-orange' : 'badge-red'),
       machineText: ms ? (ms.on + '/' + ms.total) : '--',
       machineWarn: ms ? (ms.outOfPreset + clampPending) > 0 : clampPending > 0,
-      scale: {
-        temp: scaleOf(s.target.tMin, s.target.tMax, s.temp),
-        humi: scaleOf(s.target.hMin, s.target.hMax, s.humi),
-      },
     })
 
     // tabBar 告警红点（P01：查看告警红点提示）

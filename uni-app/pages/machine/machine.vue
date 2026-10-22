@@ -3,10 +3,10 @@
     <!-- 加载态：骨架屏（barn-bar 在 page 之内，随 page 一起隐藏） -->
     <skeleton v-if="loading" :rows="3" />
 
-    <view v-if="!loading" class="page oura">
+    <view v-if="!loading" class="page">
       <barn-bar from="/pages/machine/machine" />
 
-      <!-- 全局安全状态条：安全锁定 / 离线自治 / 传感器失效时压在最顶部 -->
+      <!-- 安全状态条：只在安全锁定 / 离线 / 传感器失效时出现 -->
       <safety-bar from="/pages/machine/machine" />
 
       <!-- 概要 -->
@@ -58,34 +58,31 @@
 
         <view v-if="diseased.length === 0" class="empty">{{clampOk ? '暂无待裁定病蚕' : '接口未连通，暂无数据'}}</view>
 
-        <view v-for="(item, index) in diseased" :key="item.id" class="dz-item">
-          <view class="dz-row">
-            <view v-if="item.image" class="dz-thumb-wrap">
-              <image class="dz-thumb" :src="item.image" mode="aspectFill" lazy-load :data-id="item.id" :data-src="item.image" @tap="onPreviewImage" />
-            </view>
-            <view class="dz-main">
-              <view class="dz-pos">
-                <text>{{item.display}}</text>
-                <text class="dz-count">疑似 {{item.count}} 头</text>
-              </view>
-              <view class="dz-meta">{{item.timeText}} · 置信度 {{item.confText}}{{item.agoText ? ' · ' + item.agoText : ''}}</view>
-              <view v-if="item.causeText" class="dz-meta">{{item.causeText}}</view>
-              <view v-if="item.envText" class="dz-env">{{item.envText}}</view>
-              <view class="dz-badges">
-                <text :class="'badge ' + (item.statusTone)">{{item.statusText}}</text>
-                <text :class="'badge ' + (item.clampTone)">{{item.clampText}}</text>
-                <text class="badge badge-gray">{{item.gradeText}}</text>
-              </view>
-            </view>
+        <view v-for="(item, index) in diseased" :key="item.id" class="dz-row">
+          <view v-if="item.image" class="dz-thumb-wrap">
+            <image class="dz-thumb" :src="item.image" mode="aspectFill" lazy-load :data-id="item.id" :data-src="item.image" @tap="onPreviewImage" />
           </view>
-
-          <!-- 裁定：放行是唯一不可逆的物理动作 → 整条实底红 + 必须长按；忽略降为文字链 -->
-          <view v-if="item.canConfirm" class="dz-verdict">
-            <view :class="'vbar ' + (confirmingId === item.id ? 'is-busy' : '')" :data-id="item.id" @tap="onReleaseHint" @longpress="onConfirmYes">
-              <text class="vbar-text">{{confirmingId === item.id ? '正在下发…' : '长按放行'}}</text>
-              <text class="vbar-sub">{{confirmingId === item.id ? '等待服务端回执' : '服务端将下发夹取并码垛'}}</text>
+          <view class="dz-main">
+            <view class="dz-pos">
+              <text>{{item.display}}</text>
+              <text class="dz-count">疑似 {{item.count}} 头</text>
             </view>
-            <view class="vlink" :data-id="item.id" @tap="onConfirmNo">忽略这一条，下一轮再判</view>
+            <view class="dz-meta">{{item.timeText}} · 置信度 {{item.confText}}{{item.agoText ? ' · ' + item.agoText : ''}}</view>
+            <view v-if="item.causeText" class="dz-meta">{{item.causeText}}</view>
+            <view v-if="item.envText" class="dz-env">{{item.envText}}</view>
+            <view class="dz-badges">
+              <text :class="'badge ' + (item.statusTone)">{{item.statusText}}</text>
+              <text :class="'badge ' + (item.clampTone)">{{item.clampText}}</text>
+              <text class="badge badge-gray">{{item.gradeText}}</text>
+            </view>
+
+            <view v-if="item.canConfirm" class="dz-verdict">
+              <view :class="'vbar ' + (confirmingId === item.id ? 'is-busy' : '')" :data-id="item.id" @longpress="onConfirmYes" @tap="onReleaseHint">
+                <text class="vbar-text">{{confirmingId === item.id ? '正在下发…' : '长按放行'}}</text>
+                <text class="vbar-sub">{{confirmingId === item.id ? '等服务器回执' : '将下发夹取并码垛'}}</text>
+              </view>
+              <view class="vlink" :data-id="item.id" @tap="onConfirmNo">忽略这一条，下一轮再判</view>
+            </view>
           </view>
         </view>
       </view>
@@ -632,7 +629,7 @@ export default mpPage({
 
 .mini-cap {
   display: block;
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: #8b95a7;
   margin-top: 6rpx;
 }
@@ -650,13 +647,13 @@ export default mpPage({
 
 /* ---------------- 机械卡 ---------------- */
 .dev-kind {
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: #a8b1c0;
   margin-left: 10rpx;
 }
 
 .m-spec {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #8b95a7;
   line-height: 1.6;
   padding: 12rpx 0 6rpx;
@@ -699,7 +696,7 @@ export default mpPage({
 }
 
 .p-preset {
-  font-size: 24rpx;
+  font-size: 20rpx;
   color: #a8b1c0;
   margin-top: 4rpx;
 }
@@ -734,13 +731,13 @@ export default mpPage({
 
 .api-warn-text {
   flex: 1;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #b45309;
   line-height: 1.5;
 }
 
 .api-warn-act {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #f59e0b;
   font-weight: 600;
   margin-left: 12rpx;
@@ -786,21 +783,21 @@ export default mpPage({
 }
 
 .dz-count {
-  font-size: 24rpx;
+  font-size: 21rpx;
   font-weight: 400;
   color: #ef4444;
   margin-left: 12rpx;
 }
 
 .dz-meta {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #8b95a7;
   line-height: 1.6;
   margin-top: 4rpx;
 }
 
 .dz-env {
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: #6b7688;
   background: #f7f9fc;
   border-radius: 10rpx;
@@ -818,55 +815,47 @@ export default mpPage({
   margin: 0 8rpx 6rpx 0;
 }
 
-/* ---------------- 裁定：长按放行（唯一不可逆动作） ---------------- */
-.dz-item {
-  padding: 4rpx 0;
-  border-bottom: 1rpx solid #f5f7fb;
-}
-
-.dz-item:last-child {
-  border-bottom: none;
-}
-
+/* 裁定区：放行是「会动物理设备」的动作，做成需要长按的实底红条；
+   忽略只是本轮跳过，做成一行轻量文字链，两者不再等权并排 */
 .dz-verdict {
-  padding: 6rpx 0 18rpx;
+  margin-top: 14rpx;
 }
 
 .vbar {
+  min-height: 96rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 96rpx;
-  padding: 14rpx 0;
-  border-radius: 8rpx;
   background: #8f1d14;
+  border-radius: 10rpx;
+  padding: 12rpx 20rpx;
   box-sizing: border-box;
+}
+
+.vbar.is-busy {
+  background: #a89b93;
 }
 
 .vbar-text {
   font-size: 30rpx;
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.3;
+  line-height: 42rpx;
 }
 
 .vbar-sub {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.86);
-  margin-top: 4rpx;
-}
-
-.vbar.is-busy {
-  background: #b3a99b;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 34rpx;
 }
 
 .vlink {
   margin-top: 6rpx;
-  text-align: center;
+  padding: 26rpx 0;
   font-size: 24rpx;
-  color: #6b6257;
-  padding: 28rpx 0;
+  color: #6b7280;
+  text-align: center;
 }
 
 /* ---------------- 夹取作业 ---------------- */
@@ -892,7 +881,7 @@ export default mpPage({
 }
 
 .job-line {
-  font-size: 24rpx;
+  font-size: 23rpx;
   color: #6b7688;
   line-height: 1.7;
 }
@@ -914,14 +903,14 @@ export default mpPage({
 
 .log-time {
   width: 150rpx;
-  font-size: 24rpx;
+  font-size: 20rpx;
   color: #a8b1c0;
   flex-shrink: 0;
 }
 
 .log-text {
   flex: 1;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #6b7688;
   line-height: 1.5;
 }
@@ -932,7 +921,7 @@ export default mpPage({
 
 .foot-tip {
   margin: 8rpx 24rpx 0;
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: #a8b1c0;
   line-height: 1.6;
 }
@@ -967,7 +956,7 @@ export default mpPage({
 }
 
 .sheet-sub {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #8b95a7;
   margin-top: 8rpx;
   line-height: 1.6;
@@ -979,7 +968,7 @@ export default mpPage({
 
 .sheet-label {
   display: block;
-  font-size: 24rpx;
+  font-size: 23rpx;
   color: #6b7688;
   margin-bottom: 10rpx;
 }
@@ -1018,7 +1007,7 @@ export default mpPage({
 
 .sheet-tip {
   margin-top: 20rpx;
-  font-size: 24rpx;
+  font-size: 21rpx;
   color: #a8b1c0;
   line-height: 1.6;
 }
@@ -1037,227 +1026,5 @@ export default mpPage({
 .sheet-btns .btn-ghost:last-child,
 .sheet-btns .btn-primary:last-child {
   margin-right: 0;
-}
-
-/* ================= Oura 方向打样：暖纸 / 发丝线 / 衬线数字 ================= */
-page {
-  background: #f7f1e8;
-}
-
-.oura {
-  color: #1c1b1a;
-}
-
-.oura .card {
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-  margin: 0 36rpx;
-  padding: 36rpx 0;
-  border-top: 1rpx solid #e1dcd3;
-}
-
-.oura .card-title {
-  color: #1c1b1a;
-}
-
-.oura .card-sub {
-  color: #6b6257;
-  font-size: 24rpx;
-}
-
-.oura .card-more {
-  color: #224228;
-  font-weight: 600;
-}
-
-.oura .badge {
-  background: transparent;
-  padding-left: 0;
-  padding-right: 0;
-  font-weight: 600;
-}
-
-.oura .badge-green { color: #224228; }
-.oura .badge-orange { color: #8a5a12; }
-.oura .badge-red { color: #8f1d14; }
-.oura .badge-gray { color: #6b6257; }
-.oura .badge-blue { color: #2454c9; }
-
-.oura .tip { color: #6b6257; }
-.oura .tip-warn { color: #8a5a12; }
-.oura .empty { color: #6b6257; }
-
-.oura .mini-grid {
-  margin-top: 20rpx;
-  border-top: 1rpx solid #e1dcd3;
-  border-bottom: 1rpx solid #e1dcd3;
-}
-
-.oura .mini-tile {
-  background: transparent;
-  border-radius: 0;
-  margin-right: 0;
-}
-
-.oura .mini-tile + .mini-tile {
-  border-left: 1rpx solid #e1dcd3;
-}
-
-.oura .mini-tile.warn {
-  background: transparent;
-}
-
-.oura .mini-num {
-  font-family: Georgia, "Times New Roman", "Songti SC", serif;
-  font-size: 52rpx;
-  font-weight: 400;
-  color: #1c1b1a;
-}
-
-.oura .mini-tile.warn .mini-num {
-  color: #8a5a12;
-}
-
-.oura .mini-cap {
-  color: #6b6257;
-  font-size: 24rpx;
-}
-
-.oura .m-spec {
-  color: #6b6257;
-  font-size: 24rpx;
-}
-
-.oura .m-sec {
-  border-top: 1rpx solid #ece5d8;
-}
-
-.oura .m-sec-title {
-  color: #6b6257;
-  font-size: 24rpx;
-  letter-spacing: 2rpx;
-}
-
-.oura .p-row {
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid #ece5d8;
-}
-
-.oura .p-label {
-  font-size: 28rpx;
-  color: #1c1b1a;
-}
-
-.oura .p-preset {
-  font-size: 24rpx;
-  color: #6b6257;
-}
-
-.oura .p-val {
-  font-family: Georgia, "Times New Roman", "Songti SC", serif;
-  font-size: 34rpx;
-  font-weight: 400;
-  color: #1c1b1a;
-}
-
-.oura .p-val.p-out {
-  color: #8a5a12;
-}
-
-.oura .kv-label {
-  color: #6b6257;
-}
-
-.oura .dz-row {
-  padding: 20rpx 0 12rpx;
-  border-bottom: none;
-}
-
-.oura .dz-item {
-  border-bottom: 1rpx solid #ece5d8;
-}
-
-.oura .dz-pos {
-  font-size: 28rpx;
-  color: #1c1b1a;
-}
-
-.oura .dz-count {
-  font-size: 24rpx;
-  color: #8f1d14;
-}
-
-.oura .dz-meta {
-  font-size: 24rpx;
-  color: #6b6257;
-}
-
-.oura .dz-env {
-  font-size: 24rpx;
-  color: #6b6257;
-  background: #efe8dc;
-}
-
-.oura .job-item {
-  border-bottom: 1rpx solid #ece5d8;
-}
-
-.oura .job-pos {
-  color: #1c1b1a;
-}
-
-.oura .job-line {
-  font-size: 24rpx;
-  color: #6b6257;
-}
-
-.oura .log-row {
-  border-bottom: 1rpx solid #ece5d8;
-}
-
-.oura .log-time {
-  width: 170rpx;
-  font-size: 24rpx;
-  color: #6b6257;
-}
-
-.oura .log-text {
-  font-size: 24rpx;
-  color: #6b6257;
-}
-
-.oura .api-warn {
-  background: rgba(175, 117, 27, 0.12);
-  border: none;
-  border-radius: 6rpx;
-}
-
-.oura .api-warn-text {
-  font-size: 24rpx;
-  color: #7a4f0e;
-}
-
-.oura .api-warn-act {
-  color: #8a5a12;
-}
-
-.oura .foot-tip {
-  color: #6b6257;
-  font-size: 24rpx;
-}
-
-.oura .token-input {
-  background: #fffdf8;
-  border: 1rpx solid #ddd3c3;
-  font-size: 26rpx;
-}
-
-.sheet {
-  background: #fffdf8;
-}
-
-.sheet-input {
-  background: #f3ece0;
 }
 </style>
