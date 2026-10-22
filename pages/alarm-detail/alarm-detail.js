@@ -2,6 +2,8 @@
 const data = require('../../utils/data.js')
 const engine = require('../../utils/engine.js')
 const spec = require('../../utils/spec.js')
+const live = require('../../utils/live.js')
+const env = require('../../utils/env.js')
 
 /** 级别 → 徽标配色 */
 const LEVEL_BADGE = { info: 'badge-blue', warn: 'badge-orange', critical: 'badge-red' }
@@ -109,6 +111,14 @@ Page({
       confirmText: '确认',
       success: (r) => {
         if (!r.confirm) return
+        if (live.enabled()) {
+          env.confirmAlarm(a.id).then((res) => {
+            wx.showToast({ title: res.ok ? '告警已确认' : res.message, icon: res.ok ? 'success' : 'none' })
+            if (res.ok) live.refresh()
+            setTimeout(() => this.refresh(), 800)
+          })
+          return
+        }
         const res = engine.ackAlarm(a.id, '')
         wx.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
         this.refresh()

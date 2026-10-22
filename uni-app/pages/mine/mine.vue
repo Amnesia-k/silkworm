@@ -7,39 +7,67 @@
 
       <barn-bar from="/pages/mine/mine" />
 
-      <!-- ===================== 用户与角色 ===================== -->
-      <view v-if="role" class="card">
+      <!-- ===================== 账号 ===================== -->
+      <view class="card">
         <view class="card-header">
-          <view class="card-title">用户与角色</view>
-          <view class="card-more">本机演示</view>
-        </view>
-        <view class="user-row">
-          <view class="user-avatar">{{role.name}}</view>
-          <view class="user-main">
-            <view class="user-name">{{role.name}}</view>
-            <view class="user-desc">{{roleDesc}}</view>
-          </view>
-        </view>
-        <view class="divider"></view>
-        <view class="kv-row">
-          <text class="kv-label">职责范围</text>
-          <text class="kv-value">{{role.scope}}</text>
-        </view>
-        <view class="kv-row">
-          <text class="kv-label">使用终端</text>
-          <text class="kv-value">{{role.terminals}}</text>
-        </view>
-        <view class="kv-row">
-          <text class="kv-label">按职责分工人数</text>
-          <text class="kv-value">{{role.headcount}}</text>
+          <view class="card-title">账号</view>
+          <view class="card-more" @tap="onToggleAcc">{{accOpen ? '收起' : '设置'}}</view>
         </view>
 
-        <view class="divider"></view>
-        <view class="section-title">切换角色（演示用，立即生效）</view>
-        <view class="chip-row">
-          <view v-for="(item, index) in roleList" :key="item.key" :class="'chip ' + (role.key === item.key ? 'chip-on' : '')" :data-key="item.key" @tap="onRole">{{item.name}}</view>
+        <view class="user-row">
+          <view class="user-avatar">{{acc.loggedIn ? acc.roleText : '未登录'}}</view>
+          <view class="user-main">
+            <view class="user-name">{{acc.loggedIn ? (acc.name || acc.username) : '演示模式'}}</view>
+            <view class="user-desc">{{acc.loggedIn ? (acc.username + ' · ' + acc.roleText) : '未登录时按演示数据运行，权限不生效'}}</view>
+          </view>
+          <view :class="'badge ' + (acc.loggedIn ? 'badge-green' : 'badge-gray')">{{acc.loggedIn ? '已登录' : '离线演示'}}</view>
         </view>
-        <view class="tip">角色切换只影响本机权限判定，真实权限由服务端下发。</view>
+
+        <view class="kv-row">
+          <text class="kv-label">后端地址</text>
+          <text class="kv-value mono">{{auth.baseUrl}}</text>
+        </view>
+        <view class="kv-row">
+          <text class="kv-label">启动要求登录</text>
+          <switch class="acc-switch" :checked="auth.gate" color="#3d6df2" @change="onToggleGate" />
+        </view>
+
+        <view class="btn-row">
+          <view v-if="!acc.loggedIn" class="btn-ghost" @tap="onGoLogin">去登录</view>
+          <view v-if="acc.loggedIn" class="btn-ghost" @tap="onRefreshMe">刷新身份</view>
+          <view v-if="acc.loggedIn" class="btn-ghost" @tap="onLogout">退出登录</view>
+        </view>
+
+        <!-- 管理员专属：操作员账户 / 审批令牌 -->
+        <template v-if="acc.isAdmin">
+          <view class="divider"></view>
+          <view class="section-title">管理员</view>
+          <view class="list-item" @tap="onGoUsers">
+            <view class="list-main">
+              <view class="list-name">操作员账户</view>
+              <view class="list-meta">新增 / 改角色 / 重置密码 / 禁用</view>
+            </view>
+            <view class="list-tail"><text class="arrow">›</text></view>
+          </view>
+          <view class="list-item" @tap="onGoTokens">
+            <view class="list-main">
+              <view class="list-name">审批令牌</view>
+              <view class="list-meta">签发给操作员执行手动控制，5 分钟单次有效</view>
+            </view>
+            <view class="list-tail"><text class="arrow">›</text></view>
+          </view>
+        </template>
+
+        <view v-if="accOpen">
+          <view class="divider"></view>
+          <view class="section-title">演示：切换本机角色（不改后端账号）</view>
+          <view class="chip-row">
+            <view v-for="(item, index) in roleList" :key="item.key" :class="'chip ' + (role.key === item.key ? 'chip-on' : '')" :data-key="item.key" @tap="onRole">{{item.name}}</view>
+          </view>
+          <view class="tip">当前职责：{{roleDesc}}。真实角色以登录后后端返回的 role 为准。</view>
+        </view>
+
+        <view v-if="acc.loggedIn" class="tip">角色：{{role.scope}}</view>
       </view>
 
       <!-- ===================== 当前蚕房 ===================== -->
@@ -228,6 +256,7 @@ import * as engine from '@/utils/engine.js'
 import * as spec from '@/utils/spec.js'
 import * as nav from '@/utils/nav.js'
 import * as clamp from '@/utils/clamp.js'
+import * as auth from '@/utils/auth.js'
 
 /** 功能入口（路由在 onNav 里按 key 分发） */
 const ENTRIES = [
@@ -261,6 +290,10 @@ export default mpPage({
     apiOpen: false,
     api: {},
     apiLog: [],
+    /** 账号（utils/auth.js，后端账号库） */
+    accOpen: false,
+    acc: {},
+    auth: {},
   },
 
   onLoad() {
@@ -314,6 +347,8 @@ export default mpPage({
       roleDesc: role.scope + ' · ' + role.terminals + ' · ' + role.headcount,
       api: this.apiView(),
       apiLog: this.apiLogView(),
+      acc: auth.getState(),
+      auth: auth.getConfig(),
     })
     // 首次数据构建完成（所有 setData 之后）：关闭骨架屏
     nav.skeletonDone(this)
@@ -330,6 +365,63 @@ export default mpPage({
     const r = data.setRole(key)
     this.refresh()
     uni.showToast({ title: '已切换为' + r.name + '，权限已按规格书 11.5 生效', icon: 'success' })
+  },
+
+  /* ---------------- 账号（后端账号库） ---------------- */
+  onToggleAcc() {
+    this.setData({ accOpen: !this.accOpen })
+  },
+
+  /** 是否要求启动登录（gate）：关闭时演示模式可直接用 */
+  onToggleGate(e) {
+    const on = !!(e.detail && e.detail.value)
+    const r = auth.setConfig({ gate: on })
+    if (!r.ok) {
+      uni.showToast({ title: r.message, icon: 'none' })
+      this.setData({ auth: auth.getConfig() })
+      return
+    }
+    this.refresh()
+    uni.showToast({ title: on ? '已开启：启动需登录' : '已关闭：演示模式', icon: 'none' })
+  },
+
+  onGoLogin() {
+    uni.navigateTo({ url: '/pages/login/login' })
+  },
+
+  onRefreshMe() {
+    uni.showLoading({ title: '刷新中…' })
+    auth.refreshMe().then((res) => {
+      uni.hideLoading()
+      this.refresh()
+      if (!res.ok) {
+        uni.showToast({ title: res.message || '刷新失败', icon: 'none' })
+        return
+      }
+      uni.showToast({ title: '身份已更新：' + res.user.roleText, icon: 'success' })
+    })
+  },
+
+  onLogout() {
+    uni.showModal({
+      title: '退出登录',
+      content: '退出后回到未登录状态，本机权限按观察员处理。',
+      success: (r) => {
+        if (!r.confirm) return
+        auth.logout().then(() => {
+          this.refresh()
+          uni.showToast({ title: '已退出登录', icon: 'success' })
+        })
+      },
+    })
+  },
+
+  onGoUsers() {
+    uni.navigateTo({ url: '/pages/users/users' })
+  },
+
+  onGoTokens() {
+    uni.navigateTo({ url: '/pages/tokens/tokens' })
   },
 
   /* ---------------- 功能入口分发 ---------------- */
@@ -537,10 +629,14 @@ export default mpPage({
   flex-shrink: 0;
 }
 
+.acc-switch {
+  transform: scale(0.78);
+  transform-origin: right center;
+}
+
 .user-main {
   flex: 1;
-  margin-left: 20rpx;
-}
+  margin-left: 20rpx;}
 
 .user-name {
   font-size: 32rpx;

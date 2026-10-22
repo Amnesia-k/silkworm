@@ -120,6 +120,17 @@ const unlocked = engine.unlockSafety('barn04', '现场排查完成')
 ok(unlocked.ok !== false, '管理员解除安全锁定: ' + unlocked.message + ' → mode=' + data.getBarn('barn04').mode)
 
 section('离线自治与维护模式（9.1 / 7.2）')
+/* 用例需要「刚开机 / 温湿度在目标区间」的离线蚕房。前面的用例会把 barn03 的温湿度推高，
+   若它已因此进入 SAFE_LOCK，先按管理员处置流程复位，避免结果依赖执行时刻。 */
+{
+  const cur = data.getBarn('barn03')
+  if (cur.mode !== 'offline') {
+    const tg = data.getStatusSummary('barn03').target
+    cur.temp = (tg.tMin + tg.tMax) / 2
+    cur.humi = (tg.hMin + tg.hMax) / 2
+    engine.unlockSafety('barn03', '冒烟测试：复位离线自治用例')
+  }
+}
 const b3 = data.getBarn('barn03')
 ok(b3.mode === 'offline' && b3.online === false, '3 号蚕房离线自治 mode=' + b3.mode)
 const maint = engine.switchMaintenance('barn01', true)

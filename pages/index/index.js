@@ -13,6 +13,7 @@ const engine = require('../../utils/engine.js')
 const nav = require('../../utils/nav.js')
 const chart = require('../../utils/chart.js')
 const clamp = require('../../utils/clamp.js')
+const live = require('../../utils/live.js')
 
 Page({
   data: {
@@ -164,10 +165,25 @@ Page({
     if (!key) return
     this.stopReveal()
     const st = data.getState()
-    const to = st.simClock
+    const to = live.enabled() ? Date.now() : st.simClock
     const from = to - 6 * 3600000
     const series = data.getSeries(key, from, to)
     const range = data.getTarget(key)
+    /* 登录后走真实历史接口；未登录保持本机模拟（演示模式） */
+    if (live.enabled()) {
+      live.series(key, from, to, { limit: 200 }).then((res) => {
+        const pts = res.ok && res.points.length
+          ? res.points.map((p) => ({ ts: p.ts, temp: p.temp, humi: p.humi, outSec: 0 }))
+          : series
+        this._paintChart(pts, range, animate)
+      }).catch(() => this._paintChart(series, range, animate))
+      return
+    }
+    this._paintChart(series, range, animate)
+  },
+
+  /** 用给定序列画图（series 元素含 ts/temp/humi/outSec） */
+  _paintChart(series, range, animate) {
     // 按 5 分钟降采样：600 个分钟点压到约 72 点，曲线才干净
     const src = series.length > 96 ? series.filter((p, i) => i % Math.ceil(series.length / 72) === 0) : series
     const labels = []

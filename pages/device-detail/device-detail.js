@@ -4,6 +4,7 @@ const engine = require('../../utils/engine.js')
 const spec = require('../../utils/spec.js')
 const nav = require('../../utils/nav.js')
 const chart = require('../../utils/chart.js')
+const live = require('../../utils/live.js')
 
 /** 设备 → 规格书 4.1 BOM 条目编号映射 */
 const BOM_CODE = {
@@ -128,9 +129,23 @@ Page({
     const barnKey = this._barn || this.data.barnKey
     if (!barnKey) return
     const st = data.getState()
-    const from = st.simClock - 6 * 3600000
-    const to = st.simClock
+    const nowTs = live.enabled() ? Date.now() : st.simClock
+    const from = nowTs - 6 * 3600000
+    const to = nowTs
     const series = data.getSeries(barnKey, from, to)
+    if (live.enabled()) {
+      live.series(barnKey, from, to, { limit: 200 }).then((res) => {
+        const pts = res.ok && res.points.length
+          ? res.points.map((p) => ({ ts: p.ts, temp: p.temp, humi: p.humi, outSec: 0 }))
+          : series
+        this._paint(pts, barnKey)
+      }).catch(() => this._paint(series, barnKey))
+      return
+    }
+    this._paint(series, barnKey)
+  },
+
+  _paint(series, barnKey) {
     const src = series.length > 96 ? series.filter((p, i) => i % Math.ceil(series.length / 72) === 0) : series
     const labels = src.map((p) => data.formatClock(p.ts))
     const temp = src.map((p) => p.temp)

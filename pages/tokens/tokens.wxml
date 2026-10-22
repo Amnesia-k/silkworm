@@ -1,0 +1,50 @@
+<view class="page-body">
+
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">签发审批令牌</view>
+      <view class="card-more">5 分钟 · 单次</view>
+    </view>
+    <view class="card-sub">操作员执行手动控制或手动改机械参数时，必须持有管理员签发的 ACTION_TOKEN；令牌只对选中的设备与动作有效。</view>
+
+    <view class="form">
+      <view class="form-row">
+        <text class="form-label">作用设备</text>
+        <picker mode="selector" range="{{targets}}" range-key="name" value="{{targetIdx}}" bindchange="onPickTarget">
+          <view class="form-pick">{{targetName || '选择设备'}}</view>
+        </picker>
+      </view>
+      <view class="form-row">
+        <text class="form-label">备注</text>
+        <input class="form-input" value="{{memo}}" placeholder="选填，例如「投叶漏斗补料」" bindinput="onMemoInput" />
+      </view>
+      <view class="btn-row">
+        <view class="btn-primary {{busy ? 'btn-busy' : ''}}" bindtap="onIssue">签发令牌</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">最近令牌</view>
+      <view class="card-more" bindtap="refresh">刷新</view>
+    </view>
+
+    <view class="empty" wx:if="{{loading}}">加载中…</view>
+    <view class="api-err" wx:if="{{error}}">{{error}}</view>
+    <view class="empty" wx:if="{{!loading && !error && !list.length}}">还没有签发过令牌</view>
+
+    <view class="t-item" wx:for="{{list}}" wx:key="id" wx:for-item="t">
+      <view class="t-main">
+        <view class="t-target">{{t.target}} <text class="badge badge-{{t.tone}}">{{t.stateText}}</text></view>
+        <view class="t-meta">到期 {{t.expireText}}<text wx:if="{{t.memo}}"> · {{t.memo}}</text></view>
+        <view class="t-id mono">{{t.id}}</view>
+      </view>
+      <view class="t-act">
+        <text class="t-btn" wx:if="{{!t.used && !t.revoked}}" data-id="{{t.id}}" bindtap="onRevoke">撤销</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tip">令牌由服务端落库与校验；使用后自动作废，管理员也可手动撤销。</view>
+</view>

@@ -7,6 +7,7 @@ const engine = require('../../utils/engine.js')
 const spec = require('../../utils/spec.js')
 const nav = require('../../utils/nav.js')
 const clamp = require('../../utils/clamp.js')
+const auth = require('../../utils/auth.js')
 
 /** 功能入口（路由在 onNav 里按 key 分发） */
 const ENTRIES = [
@@ -40,6 +41,10 @@ Page({
     apiOpen: false,
     api: {},
     apiLog: [],
+    /** 账号（utils/auth.js，后端账号库） */
+    accOpen: false,
+    acc: {},
+    auth: {},
   },
 
   onLoad() {
@@ -93,6 +98,8 @@ Page({
       roleDesc: role.scope + ' · ' + role.terminals + ' · ' + role.headcount,
       api: this.apiView(),
       apiLog: this.apiLogView(),
+      acc: auth.getState(),
+      auth: auth.getConfig(),
     })
     // 首次数据构建完成（所有 setData 之后）：关闭骨架屏
     nav.skeletonDone(this)
@@ -109,6 +116,63 @@ Page({
     const r = data.setRole(key)
     this.refresh()
     wx.showToast({ title: '已切换为' + r.name + '，权限已按规格书 11.5 生效', icon: 'success' })
+  },
+
+  /* ---------------- 账号（后端账号库） ---------------- */
+  onToggleAcc() {
+    this.setData({ accOpen: !this.data.accOpen })
+  },
+
+  /** 是否要求启动登录（gate）：关闭时演示模式可直接用 */
+  onToggleGate(e) {
+    const on = !!(e.detail && e.detail.value)
+    const r = auth.setConfig({ gate: on })
+    if (!r.ok) {
+      wx.showToast({ title: r.message, icon: 'none' })
+      this.setData({ auth: auth.getConfig() })
+      return
+    }
+    this.refresh()
+    wx.showToast({ title: on ? '已开启：启动需登录' : '已关闭：演示模式', icon: 'none' })
+  },
+
+  onGoLogin() {
+    wx.navigateTo({ url: '/pages/login/login' })
+  },
+
+  onRefreshMe() {
+    wx.showLoading({ title: '刷新中…' })
+    auth.refreshMe().then((res) => {
+      wx.hideLoading()
+      this.refresh()
+      if (!res.ok) {
+        wx.showToast({ title: res.message || '刷新失败', icon: 'none' })
+        return
+      }
+      wx.showToast({ title: '身份已更新：' + res.user.roleText, icon: 'success' })
+    })
+  },
+
+  onLogout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后回到未登录状态，本机权限按观察员处理。',
+      success: (r) => {
+        if (!r.confirm) return
+        auth.logout().then(() => {
+          this.refresh()
+          wx.showToast({ title: '已退出登录', icon: 'success' })
+        })
+      },
+    })
+  },
+
+  onGoUsers() {
+    wx.navigateTo({ url: '/pages/users/users' })
+  },
+
+  onGoTokens() {
+    wx.navigateTo({ url: '/pages/tokens/tokens' })
   },
 
   /* ---------------- 功能入口分发 ---------------- */

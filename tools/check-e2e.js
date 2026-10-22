@@ -6,10 +6,10 @@
  *   check-e2e.js    用 utils/clamp.js 的真实代码走真实 HTTP，打到 tools/stub-clamp-server.js
  *
  * 这证明了「前端代码 → 网络 → 后端契约」整条链路是通的；等 WireGuard 隧道建好，
- * 把 baseUrl 换成 http://10.66.66.1/api 再跑一次，就是真实后端的验收。
+ * 把 baseUrl 换成 http://115.191.10.217:8000（**不含 /api**，客户端自己拼 /api）再跑一次，就是真实后端的验收。
  *
  *   node tools/check-e2e.js
- *   node tools/check-e2e.js --url http://10.66.66.1/api --token test
+ *   node tools/check-e2e.js --url http://115.191.10.217:8000 --token test
  */
 
 'use strict'
@@ -26,7 +26,7 @@ function argOf(flag, dflt) {
 
 const PORT = 8901
 const EXTERNAL = argOf('--url', null)
-const BASE = EXTERNAL || ('http://127.0.0.1:' + PORT + '/api')
+const BASE = EXTERNAL || ('http://127.0.0.1:' + PORT)
 const TOKEN = argOf('--token', 'test')
 
 let pass = 0

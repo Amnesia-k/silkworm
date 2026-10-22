@@ -1,0 +1,98 @@
+/* pages/tokens 审批令牌 */
+page {
+  background: #f4f6f9;
+}
+
+.page-body {
+  padding: 24rpx;
+}
+
+/* ---------- 表单 ---------- */
+.form {
+  margin: 20rpx 0 8rpx;
+  padding: 24rpx;
+  background: #f7f9fc;
+  border: 2rpx solid #eef2f8;
+  border-radius: 20rpx;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.form-label {
+  width: 150rpx;
+  font-size: 26rpx;
+  color: #5b6577;
+  flex-shrink: 0;
+}
+
+.form-input,
+.form-pick {
+  flex: 1;
+  height: 76rpx;
+  line-height: 76rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  background: #fff;
+  border: 2rpx solid #eef2f8;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  color: #1f2b3d;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.btn-busy {
+  opacity: 0.6;
+}
+
+/* ---------- 令牌行 ---------- */
+.t-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 22rpx 0;
+  border-top: 2rpx solid #f2f5fa;
+}
+
+.t-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-target {
+  font-size: 28rpx;
+  color: #1f2b3d;
+  font-weight: 600;
+}
+
+.t-target .badge {
+  margin-left: 10rpx;
+  font-weight: 400;
+}
+
+.t-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #8b95a7;
+}
+
+.t-id {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #b8c0ce;
+  word-break: break-all;
+}
+
+.t-act {
+  margin-left: 16rpx;
+}
+
+.t-btn {
+  font-size: 24rpx;
+  color: #ef4444;
+  padding: 8rpx 4rpx;
+}

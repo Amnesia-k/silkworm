@@ -4,6 +4,8 @@ const engine = require('../../utils/engine.js')
 const spec = require('../../utils/spec.js')
 const nav = require('../../utils/nav.js')
 const clamp = require('../../utils/clamp.js')
+const live = require('../../utils/live.js')
+const auth = require('../../utils/auth.js')
 
 /** S1~S4 会进入 SAFE_LOCK，说明卡中标红 */
 const SAFE_LOCK_CODES = ['S1', 'S2', 'S3', 'S4']
@@ -201,6 +203,18 @@ Page({
       confirmText: '确认下发',
       success: (r) => {
         if (!r.confirm) return
+        /* 登录后走真实下发接口 POST /control/manual；未登录走本机模拟 */
+        if (live.enabled()) {
+          live.toggle(barnKey, id, !dev.on, { token: tokenId }).then((res) => {
+            wx.showToast({
+              title: res.ok ? (res.mode === 'manual' ? '已下发，进入手动模式' : '指令已下发') : res.message,
+              icon: res.ok ? 'success' : 'none',
+            })
+            if (res.ok) this.setData({ tokenInput: '' })
+            setTimeout(() => this.refresh(), 1200)
+          })
+          return
+        }
         const res = engine.toggleDevice(barnKey, id, tokenId)
         wx.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
         if (res.ok) this.setData({ tokenInput: '' })
@@ -240,6 +254,17 @@ Page({
     const barnKey = this._barn || this.data.barnKey
     if (!this.data.isAdmin) {
       wx.showToast({ title: '审批令牌只能由管理员签发', icon: 'none' })
+      return
+    }
+    /* 登录后令牌由后端签发（POST /control/tokens）；未登录走本机模拟 */
+    if (auth.isLoggedIn()) {
+      auth.issueToken({ target: this.data.issueTarget, action: 'manual', memo: this.data.issueMemo }).then((res) => {
+        wx.showToast({ title: res.ok ? '令牌已签发' : res.message, icon: res.ok ? 'success' : 'none' })
+        if (res.ok) {
+          this.setData({ lastTokenId: res.token ? res.token.id : '', issueMemo: '' })
+          this.refresh()
+        }
+      })
       return
     }
     const res = engine.issueToken(barnKey, this.data.issueTarget, 'toggle', this.data.issueMemo)
@@ -283,6 +308,13 @@ Page({
       confirmText: '确认下发',
       success: (r) => {
         if (!r.confirm) return
+        if (live.enabled()) {
+          live.exitManual(barnKey).then((res) => {
+            wx.showToast({ title: res.ok ? '已退出手动模式' : res.message, icon: res.ok ? 'success' : 'none' })
+            setTimeout(() => this.refresh(), 1200)
+          })
+          return
+        }
         const res = engine.exitManual(barnKey)
         wx.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
         this.refresh()

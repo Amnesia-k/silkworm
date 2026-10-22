@@ -24,10 +24,14 @@
   flex-shrink: 0;
 }
 
+.acc-switch {
+  transform: scale(0.78);
+  transform-origin: right center;
+}
+
 .user-main {
   flex: 1;
-  margin-left: 20rpx;
-}
+  margin-left: 20rpx;}
 
 .user-name {
   font-size: 32rpx;

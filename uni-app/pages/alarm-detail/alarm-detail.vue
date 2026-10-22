@@ -118,6 +118,8 @@ import { mpPage } from '@/utils/uni-shim.js'
 import * as data from '@/utils/data.js'
 import * as engine from '@/utils/engine.js'
 import * as spec from '@/utils/spec.js'
+import * as live from '@/utils/live.js'
+import * as env from '@/utils/env.js'
 
 /** 级别 → 徽标配色 */
 const LEVEL_BADGE = { info: 'badge-blue', warn: 'badge-orange', critical: 'badge-red' }
@@ -225,6 +227,14 @@ export default mpPage({
       confirmText: '确认',
       success: (r) => {
         if (!r.confirm) return
+        if (live.enabled()) {
+          env.confirmAlarm(a.id).then((res) => {
+            uni.showToast({ title: res.ok ? '告警已确认' : res.message, icon: res.ok ? 'success' : 'none' })
+            if (res.ok) live.refresh()
+            setTimeout(() => this.refresh(), 800)
+          })
+          return
+        }
         const res = engine.ackAlarm(a.id, '')
         uni.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
         this.refresh()

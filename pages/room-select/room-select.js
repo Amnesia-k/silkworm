@@ -7,6 +7,7 @@
 const data = require('../../utils/data.js')
 const engine = require('../../utils/engine.js')
 const nav = require('../../utils/nav.js')
+const auth = require('../../utils/auth.js')
 
 Page({
   data: {
@@ -17,6 +18,11 @@ Page({
   },
 
   onLoad(options) {
+    // 冷启动闸门：需要登录但还没有会话时，直接去登录页（gate 关闭时不拦人）
+    if (auth.needsLogin()) {
+      wx.reLaunch({ url: '/pages/login/login' })
+      return
+    }
     const from = options && options.from ? decodeURIComponent(options.from) : ''
     this.setData({ from })
     this.refresh()

@@ -22,9 +22,12 @@ const CONFIG_KEY = 'silk_clamp_v1'
 const LOG_MAX = 40
 
 const DEFAULT_CONFIG = {
-  /** 后端根地址（含 /api），默认按交付单的隧道地址 */
-  baseUrl: 'http://10.66.66.1/api',
-  /** 访问令牌：服务端只校验非空，默认填 test */
+  /**
+   * ISH（检测 + 夹取）服务根地址：**不含 /api**，各路径自带 /api/*。
+   * 交付单：ISH 公网可达 http://115.191.10.217:8000；环境调控走隧道 http://10.66.66.1/api（见 utils/auth.js）。
+   */
+  baseUrl: 'http://115.191.10.217:8000',
+  /** ISH 只校验 Authorization 头存在（不验签），默认填 test */
   token: 'test',
   /** 区域编号 */
   zone: 'zone01',
@@ -360,7 +363,7 @@ function listDiseased(opts) {
   const o = opts || {}
   const barn = getBarn(o.barn)
   const query = { status: o.status || 'pending', limit: o.limit || 50, zone: o.zone || getConfig().zone }
-  return request('GET', '/barns/' + barn + '/diseased', { query: query, kind: 'diseased' }).then((r) => {
+  return request('GET', '/api/barns/' + barn + '/diseased', { query: query, kind: 'diseased' }).then((r) => {
     if (!r.ok) { STATE.ok = false; STATE.code = r.code; STATE.message = r.message; return r }
     const list = Array.isArray(r.data) ? r.data : []
     const items = list.map(normalizeDiseased)
@@ -384,7 +387,7 @@ function confirmDiseased(trayId, opts) {
   }
   const query = { zone: o.zone || getConfig().zone }
   const key = 'clamp-' + barn + '-' + trayId + '-' + Date.now()
-  return request('POST', '/barns/' + barn + '/diseased/' + trayId + '/confirm', {
+  return request('POST', '/api/barns/' + barn + '/diseased/' + trayId + '/confirm', {
     query: query, data: body, idempotencyKey: key, kind: 'confirm',
     timeoutMs: getConfig().confirmTimeoutMs, retry: 0,
   }).then((r) => {
@@ -414,7 +417,7 @@ function listJobs(opts) {
   const o = opts || {}
   const barn = getBarn(o.barn)
   const query = { status: o.status || 'all', limit: o.limit || 50, zone: o.zone || getConfig().zone }
-  return request('GET', '/barns/' + barn + '/clamp/jobs', { query: query, kind: 'jobs' }).then((r) => {
+  return request('GET', '/api/barns/' + barn + '/clamp/jobs', { query: query, kind: 'jobs' }).then((r) => {
     if (!r.ok) { STATE.ok = false; STATE.code = r.code; STATE.message = r.message; return r }
     const list = Array.isArray(r.data) ? r.data : []
     const items = list.map(normalizeJob)
@@ -426,12 +429,12 @@ function listJobs(opts) {
 /** 巡检状态（可选，只读展示；绝不调用 /patrol/run） */
 function patrolStatus(opts) {
   const barn = getBarn((opts || {}).barn)
-  return request('GET', '/barns/' + barn + '/patrol/status', { kind: 'patrol' })
+  return request('GET', '/api/barns/' + barn + '/patrol/status', { kind: 'patrol' })
 }
 
 /** 连通性测试：用最小列表请求探活 */
 function ping() {
-  return request('GET', '/barns/' + getBarn() + '/diseased', { query: { status: 'pending', limit: 1, zone: getConfig().zone }, kind: 'ping', retry: 0 })
+  return request('GET', '/api/barns/' + getBarn() + '/diseased', { query: { status: 'pending', limit: 1, zone: getConfig().zone }, kind: 'ping', retry: 0 })
 }
 
 /* ------------------------------------------------------------------ */

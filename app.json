@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/room-select/room-select",
+    "pages/login/login",
     "pages/index/index",
     "pages/history/history",
     "pages/alerts/alerts",
@@ -11,7 +12,9 @@
     "pages/report/report",
     "pages/agent/agent",
     "pages/device-detail/device-detail",
-    "pages/alarm-detail/alarm-detail"
+    "pages/alarm-detail/alarm-detail",
+    "pages/users/users",
+    "pages/tokens/tokens"
   ],
   "window": {
     "backgroundTextStyle": "light",

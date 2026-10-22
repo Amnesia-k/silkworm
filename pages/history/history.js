@@ -9,6 +9,7 @@ const data = require('../../utils/data.js')
 const engine = require('../../utils/engine.js')
 const nav = require('../../utils/nav.js')
 const chart = require('../../utils/chart.js')
+const live = require('../../utils/live.js')
 
 const RANGES = [
   { key: '1h', label: '近1小时', ms: 3600000 },
@@ -136,7 +137,9 @@ Page({
       return { from: this.data.customFrom, to: this.data.customTo }
     }
     const item = RANGES.filter((r) => r.key === this.data.rangeKey)[0] || RANGES[1]
-    return { from: st.simClock - item.ms, to: st.simClock }
+    /* 登录后按真实服务器时间取窗口；演示模式跟模拟时钟 */
+    const now = live.enabled() ? Date.now() : st.simClock
+    return { from: now - item.ms, to: now }
   },
 
   /* ---------------- 手势缩放（双指捏合缩放 / 单指拖动平移 / 双击复位） ---------------- */
@@ -275,7 +278,12 @@ Page({
     this.compute()
   },
 
-  compute(force) {
+  /** 演示模式（未登录）用的本机模拟序列 */
+  _mockSeries(key, from, to, useHour) {
+    return useHour ? data.getHourlyAgg(key, from, to) : data.getSeries(key, from, to)
+  },
+
+  compute(force, override) {
     const key = this.data.barnKey
     if (!key) return
     const base = this.window()
@@ -283,7 +291,17 @@ Page({
     this._base = base
     const span = win.to - win.from
     const useHour = span > 30 * 3600000
-    const series = useHour ? data.getHourlyAgg(key, win.from, win.to) : data.getSeries(key, win.from, win.to)
+    /* 登录后走真实历史接口（limit ≤ 2000，granularity 只支持 min/raw）；未登录保持本机模拟 */
+    if (!override && live.enabled()) {
+      live.series(key, win.from, win.to, { limit: 500 }).then((res) => {
+        const pts = res.ok && res.points.length
+          ? res.points.map((p) => ({ ts: p.ts, temp: p.temp, humi: p.humi, outSec: 0 }))
+          : null
+        this.compute(force, pts || this._mockSeries(key, win.from, win.to, useHour))
+      }).catch(() => this.compute(force, this._mockSeries(key, win.from, win.to, useHour)))
+      return
+    }
+    const series = override || this._mockSeries(key, win.from, win.to, useHour)
     const unit = useHour ? '小时' : '分钟'
 
     const temps = series.map((p) => (p.tempAvg !== undefined ? p.tempAvg : p.temp))

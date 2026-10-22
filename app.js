@@ -6,7 +6,7 @@
 
 const data = require('./utils/data.js')
 const engine = require('./utils/engine.js')
-const gateway = require('./utils/gateway.js')
+const live = require('./utils/live.js')
 
 App({
   globalData: {
@@ -21,19 +21,19 @@ App({
     this.globalData.currentBarn = b ? b.barn : ''
     this.globalData.role = data.getState().role
     engine.start()
-    // 实机对接（预留）：默认 sim 模式下 start() 直接返回 false，不发起任何网络请求；
-    // 切到 live 后按配置走 WebSocket 推送或 HTTP 轮询，数据写入 utils/data.js 的实机覆盖层。
-    gateway.start()
+    // 已登录 = 实时数据：轮询 barn-api 的 realtime / alarms，写入 data.js 实机覆盖层；
+    // 未登录 = 演示模式：页面读本机模拟引擎，不发任何网络请求。
+    if (live.enabled() && this.globalData.currentBarn) live.start(this.globalData.currentBarn)
   },
 
   onShow() {
     engine.start()
-    gateway.start()
+    if (live.enabled() && this.globalData.currentBarn) live.start(this.globalData.currentBarn)
   },
 
   onHide() {
     engine.stop()
-    gateway.stop()
+    live.stop()
   },
 
   onError(err) {

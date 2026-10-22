@@ -33,13 +33,16 @@ uni-app/
 │   ├── barn-bar/barn-bar.vue   # 顶部「当前蚕房」条（easycom 自动注册，页面里直接写 <barn-bar/>）
 │   └── skeleton/skeleton.vue   # 骨架屏占位卡（easycom 自动注册，页面里直接写 <skeleton rows="{{3}}"/>）
 ├── pages/
+│   ├── login/login.vue               # 登录（账号密码 + 服务器地址；未登录可进演示模式）
 │   ├── room-select/room-select.vue   # 启动页：选择蚕房（4 栋卡片）
 │   ├── index/index.vue               # P01 实时看板（Tab）
 │   ├── history/history.vue           # P02 历史曲线（Tab）
 │   ├── alerts/alerts.vue             # P03 告警列表（Tab）
 │   ├── control/control.vue           # P04 手动控制（Tab，含机械化设备入口 / 待裁定病蚕数）
 │   ├── machine/machine.vue           # 机械化设备 + 病蚕裁定 + 夹取作业（预设工作范围 + 人工干涉）
-│   ├── mine/mine.vue                 # 个人中心（Tab，含「后端接口」卡：地址/令牌/测试连接/请求日志）
+│   ├── mine/mine.vue                 # 个人中心（Tab，含「账号」卡与「后端接口」卡：登录/角色/退出、夹取接口地址）
+│   ├── users/users.vue               # 操作员账户管理（仅管理员）
+│   ├── tokens/tokens.vue             # 审批令牌签发 / 撤销（仅管理员）
 │   ├── config/config.vue             # P05 参数配置（仅管理员）
 │   ├── report/report.vue             # P06 日报/报表
 │   ├── agent/agent.vue               # P07 Agent 问答
@@ -53,7 +56,10 @@ uni-app/
     ├── chart.js                # Canvas 2D 折线/双轴环境曲线/柱状/环形图
     ├── nav.js                  # tab 路由表 + ensureBarn() / goSelect() / backFrom() + skeletonBegin()/skeletonDone()
     ├── clamp.js                # 病蚕识别 / 人工裁定 / 夹取作业 后端接口客户端（轮询、错误码、归一化）
-    ├── gateway.js              # 环境数据实机对接适配层（预留：默认模拟模式不联网；统一错误码与重试、可插拔传输）
+    ├── http.js                 # 统一请求层：信封解包（env/ish）、401 刷新重试、错误码归一
+    ├── auth.js                 # 登录 / JWT 会话 / capabilities 能力判断 / 操作员账户 / 审批令牌
+    ├── env.js                  # 环境调控 barn-api 客户端（realtime/history/alarms/manual）
+    ├── live.js                 # 实时数据适配：5 s 轮询 → 写入 data.js 覆盖层，页面零改动
     └── uni-shim.js             # 迁移适配层（setData / mpPage / mpComponent）
 ```
 
@@ -82,25 +88,43 @@ cd ..
 node tools/check-pages.js      # 原生小程序：四件套齐全 / JSON 合法 / 插值标识符已定义
 node tools/check-handlers.js   # 原生小程序：wxml 里每个 bind*/catch* 处理函数都有实现
 node tools/smoke-test.js       # 原生小程序：数据层与业务规则冒烟（当前 61 项通过）
-node tools/check-gateway.js    # 环境数据实机对接适配层（预留层）：配置校验 / 报文归一化 / 错误码与重试 / 幂等键 / 覆盖层 / WS / 轮询（当前 93 项通过）
 node tools/check-clamp.js      # 病蚕/裁定/夹取作业接口客户端：信封解包、错误码映射、重试策略、幂等键、视图归一化、轮询订阅（当前 83 项通过）
 node tools/check-stub.js       # 本地桩服务自测：鉴权/信封/400/422/404/409/canConfirm/placed/图片（当前 52 项通过）
 node tools/check-e2e.js        # 全链路：真实 utils/clamp.js → 真实 HTTP → 桩服务（当前 43 项通过）
 node tools/stub-clamp-server.js # 起本地桩服务（默认 8787），隧道没通时用它在局域网联调 App
 node tools/migrate-to-uniapp.js # 重新生成 uni-app 产物（改完原生工程后跑这个）
 node tools/check-uniapp.js     # uni-app 产物静态校验：SFC 真实编译 + 逐页对齐 + 样式一致性
-node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲染 14 个页面/组件
+node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲染 17 个页面/组件
 ```
 
 > 组件按 uni-app 的 **easycom** 约定自动注册（`pages.json` 里 `easycom.autoscan: true`，组件放在 `components/<name>/<name>.vue`），所以页面模板里直接写 `<barn-bar/>`、`<skeleton/>`，不需要 import 或 `components: {}`。
 
-**验证边界（如实说明）**：本机没有 HBuilderX / uni-app 编译工具链，所以**没有跑过真实的 uni-app 编译与真机运行**。已完成的是：① `@vue/compiler-sfc` 对每个 `.vue` 做真实 SFC 解析与模板/脚本编译（15 个文件 0 失败）；② 用 `@vue/server-renderer` 在 Node 里对 12 个页面 + 2 个组件做真实渲染（生命周期 `onLoad/onShow/onReady` 与组件 `attached` 均触发，canvas 绘图调用约 2000 次，0 失败），因此模板表达式、null 安全、事件方法存在性、canvas 代码路径都已实际执行过。首次编译若报错，多半是平台差异，请把报错发我。
+**验证边界（如实说明）**：本机没有 HBuilderX / uni-app 编译工具链，所以**没有跑过真实的 uni-app 编译与真机运行**。已完成的是：① `@vue/compiler-sfc` 对每个 `.vue` 做真实 SFC 解析与模板/脚本编译（18 个文件 0 失败）；② 用 `@vue/server-renderer` 在 Node 里对 15 个页面 + 2 个组件做真实渲染（生命周期 `onLoad/onShow/onReady` 与组件 `attached` 均触发，canvas 绘图调用约 2100 次，0 失败），因此模板表达式、null 安全、事件方法存在性、canvas 代码路径都已实际执行过。首次编译若报错，多半是平台差异，请把报错发我。
 
 > 渲染校验里组件用 `app.component()` 手动注册，等价于 easycom 的扫描结果；页面骨架屏的 420 ms 保底展示在同步 SSR 下不会到点，harness 会直接渲染页面主体（骨架屏组件本身单独渲染校验）。
 
-## 六、后端接口（病蚕裁定 / 夹取作业）
+## 六、后端接口（环境调控 + 病蚕裁定 / 夹取作业）
 
-这是本项目**唯一已接真实后端**的部分，契约见同级 `docs/实机对接接口.md` 与后端交付单 `20_前端交付单（安卓App接口与传参）.md`。
+项目有**两套真实后端**，入口都在「我的」里，契约见 `前端接口交付.md` 与 `docs/实机对接接口.md`（第 11、12 节）。
+
+### 6.1 环境调控 barn-api（登录后才启用）
+
+| 模块 | 职责 |
+|---|---|
+| `utils/http.js` | 统一请求、信封解包、401 自动 refresh 后重试一次、错误码归一 |
+| `utils/auth.js` | `POST /auth/login` 拿 JWT（access 7200 s）+ `GET /auth/me` 的 `capabilities[]`；`can(cap)` 决定按钮；会话存 `silk_auth_session_v1` |
+| `utils/env.js` | `realtime / devices / alarms / confirmAlarm / history / schedulerState / manual / manualExit`；指令 target 映射 `heat01↔heater`、`mist01↔mist` |
+| `utils/live.js` | 每 5 s 轮询 realtime + active alarms，装配成与 `data.getStatusSummary` 同形视图写入 data.js 覆盖层，页面代码不改 |
+
+- 基址 `http://10.66.66.1/api`（**已含 /api**，只走 WireGuard 隧道）；联调实例可填 `http://127.0.0.1:8012/api`。
+- **按能力控按钮**：`view / hist / ack / manual / config_change / token_issue / user_manage`，不要硬编码 role。
+- 503（`mqtt_unavailable` / `publish_failed`）表示设备侧不在线，**不要自动重试**；令牌错误是 403 而不是 400。
+- 我的 → 账号：打开「启动要求登录」后，冷启动会先落到登录页；关闭则直接进演示模式（本机模拟，不发网络请求）。
+- 管理员在「操作员账户」「审批令牌」两个页面里管理账号与 ACTION_TOKEN。
+
+### 6.2 病蚕裁定 / 夹取作业（ISH）
+
+契约见 `20_前端交付单（安卓App接口与传参）.md`。
 
 | 页面 | 用的接口 | 说明 |
 |---|---|---|
@@ -110,12 +134,12 @@ node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲�
 
 要点：
 
-1. **地址与鉴权**：默认 `http://10.66.66.1/api`（需先连 WireGuard 隧道），头 `Authorization: Bearer <任意非空>`。地址/令牌/区域在「我的 → 后端接口」里可改，存本地 Storage（键 `silk_clamp_v1`）。
+1. **地址与鉴权**：默认 `http://115.191.10.217:8000`（不含 /api，路径自带 `/api/*`，公网可达；隧道内也可指 `http://10.66.66.1/api`）（需先连 WireGuard 隧道），头 `Authorization: Bearer <任意非空>`。地址/令牌/区域在「我的 → 后端接口」里可改，存本地 Storage（键 `silk_clamp_v1`）。
 2. **没有推送**：进入机械页后每 20 s 拉一次待裁定列表与作业列表；裁定成功后立即重拉。定时器只在 `utils/clamp.js` 里有一个，页面通过 `startPolling/stopPolling` 订阅，符合「页面不自起定时器」的约定。
 3. **裁定 `yes` 会阻塞到阶段回执**（顺利 <2 s，最坏约 19 s），所以该请求超时设为 35 s；`no` 只是忽略本轮，下一轮仍会重推。重复相同裁定幂等，不同裁定返回 409 `already_decided`。
 4. **`placed === true` 才代表真的夹取放到位**；按钮是否显示只看后端 `canConfirm`（字段缺失时按 `status=pending && level=info` 推导）。
 5. **坐标口径已按交付单改为 3 列 × 1 排 × 4 层**（`utils/data.js` 的 `FRAME_LIMIT`）。
-6. **已删除的模拟部分**：本机生成的病蚕记录 `createDiseased()`、坐标弹层启动码垛作业 `engine.startPalletJob()` / `cancelPalletJob()`、机械卡里的作业进度条。温湿度、曲线、告警、设备控制后端暂无接口，仍走本机模拟引擎。
+6. **已删除的模拟部分**：本机生成的病蚕记录 `createDiseased()`、坐标弹层启动码垛作业 `engine.startPalletJob()` / `cancelPalletJob()`、机械卡里的作业进度条；以及被 env.js/live.js 取代的旧预留层 `utils/gateway.js`（与 `tools/check-gateway.js`）。登录后温湿度、曲线、告警、设备控制全部走后端，仅未登录的演示模式才用本机模拟引擎。
 7. **Android 明文 HTTP**：`manifest.json` 的 `app-plus.distribute.android` 已加 `usesCleartextTraffic: true` 与 `INTERNET` 权限；微信小程序侧在 `project.config.json` 里关了合法域名校验（`setting.urlCheck: false`），App 端若仍被拦，需在打包时勾选「不校验合法域名」或用自定义基座。
 8. **隧道没通也能联调**：`node tools/stub-clamp-server.js` 起一个零依赖桩服务（默认 `8787`，按交付单口径造数据），App「我的 → 后端接口」把地址改成 `http://<本机局域网IP>:8787/api`、令牌随意非空即可跑通全链路。完整步骤、验收清单、错误码对照表见 **`docs/病蚕接口联调手册.md`**。
 
@@ -137,4 +161,4 @@ node tools/render-test.js      # uni-app 产物运行时校验：SSR 真实渲�
 6. **不要用微信开发者工具直接打开本目录**（它不是原生小程序工程），请用 HBuilderX 打开并运行到微信开发者工具。
 7. `unpackage/` 下若有旧编译产物（来自早期版本），重新运行一次即可覆盖；它不需要纳入交付。
 8. 演示数据在 `utils/data.js` 中以「模拟运行态」方式生成，`utils/engine.js` 按规格书的 2 s 采样 / 10 s 控制 / 90 s 心跳等节奏驱动；真实闭环在 ESP32 固件 L2 层，前端只做展示与人工操作入口。
-9. **实机对接（已预留）**：`utils/gateway.js` 是设备/后端适配层，默认 `mode='sim'` **不发任何网络请求**；在 **我的 → 数据源** 里切「实机对接」、填后端地址（可选推送地址与令牌），即可让所有页面改读后端数据——页面代码不用改（网关把实机数据写入 `utils/data.js` 的覆盖层，未返回的字段自动沿用本地值）。切到实机后 `gateway.command / pushConfig / palletJob` 才会真正下发指令，且**失败不会回落到本地模拟**（安全要求）。后端需实现的接口、报文与错误码见仓库根目录 `docs/实机对接接口.md`；传输层可替换（MQTT / 网关盒）：`gateway.setTransport(fn)`。
+9. **实机对接**：环境数据走 `utils/http.js + auth.js + env.js + live.js`（登录后 5 s 轮询 realtime，写入 `utils/data.js` 覆盖层，页面代码不用改）；病蚕/夹取走 `utils/clamp.js`。旧的 `utils/gateway.js` 预留层已删除。后端需实现的接口、报文与错误码见 `docs/实机对接接口.md`（第 11、12 节）；APP 端如要换 MQTT/网关盒，只需替换 `utils/http.js` 的 `request()` 传输实现。

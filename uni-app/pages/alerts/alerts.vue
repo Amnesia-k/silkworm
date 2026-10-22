@@ -101,6 +101,8 @@ import * as data from '@/utils/data.js'
 import * as engine from '@/utils/engine.js'
 import * as spec from '@/utils/spec.js'
 import * as nav from '@/utils/nav.js'
+import * as live from '@/utils/live.js'
+import * as env from '@/utils/env.js'
 
 /** 级别筛选（chip 一） */
 const LEVEL_OPTIONS = [
@@ -232,6 +234,16 @@ export default mpPage({
       uni.showToast({ title: this.ackReason || '当前角色无权执行该操作', icon: 'none' })
       return
     }
+    /* 登录后走真实接口 POST /alarms/{event_id}/confirm；未登录走本机模拟 */
+    if (live.enabled()) {
+      const id = e.currentTarget.dataset.id
+      env.confirmAlarm(id).then((res) => {
+        uni.showToast({ title: res.ok ? '告警已确认' : res.message, icon: res.ok ? 'success' : 'none' })
+        if (res.ok) live.refresh()
+        setTimeout(() => this.refresh(), 800)
+      })
+      return
+    }
     const res = engine.ackAlarm(e.currentTarget.dataset.id, '')
     uni.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
     this.refresh()
@@ -249,6 +261,17 @@ export default mpPage({
       confirmText: '确认',
       success: (r) => {
         if (!r.confirm) return
+        if (live.enabled()) {
+          const ids = (this.list || []).filter((a) => !a.acked && a.status !== 'acked').map((a) => a.id)
+          if (!ids.length) { uni.showToast({ title: '没有未处理告警', icon: 'none' }); return }
+          Promise.all(ids.map((id) => env.confirmAlarm(id))).then((rs) => {
+            const bad = rs.filter((x) => !x.ok).length
+            uni.showToast({ title: bad ? ('部分确认失败 ' + bad + ' 条') : ('已确认 ' + ids.length + ' 条'), icon: bad ? 'none' : 'success' })
+            live.refresh()
+            setTimeout(() => this.refresh(), 800)
+          })
+          return
+        }
         const res = engine.ackAll(this.barnKey)
         uni.showToast({ title: res.message, icon: res.ok ? 'success' : 'none' })
         this.refresh()

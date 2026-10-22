@@ -1,0 +1,106 @@
+/* pages/users 操作员账户管理 */
+page {
+  background: #f4f6f9;
+}
+
+.page-body {
+  padding: 24rpx;
+}
+
+/* ---------- 新增表单 ---------- */
+.form {
+  margin: 20rpx 0 8rpx;
+  padding: 24rpx;
+  background: #f7f9fc;
+  border: 2rpx solid #eef2f8;
+  border-radius: 20rpx;
+}
+
+.form-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f2b3d;
+  margin-bottom: 16rpx;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.form-label {
+  width: 150rpx;
+  font-size: 26rpx;
+  color: #5b6577;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  height: 76rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  background: #fff;
+  border: 2rpx solid #eef2f8;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  color: #1f2b3d;
+}
+
+.btn-busy {
+  opacity: 0.6;
+}
+
+/* ---------- 账号行 ---------- */
+.u-item {
+  display: flex;
+  align-items: center;
+  padding: 22rpx 0;
+  border-top: 2rpx solid #f2f5fa;
+}
+
+.u-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.u-name {
+  font-size: 28rpx;
+  color: #1f2b3d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.u-name .badge {
+  margin-left: 10rpx;
+}
+
+.u-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #8b95a7;
+}
+
+.u-act {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 16rpx;
+}
+
+.u-btn {
+  font-size: 24rpx;
+  color: #3d6df2;
+  padding: 8rpx 4rpx;
+}
+
+.u-btn-off {
+  color: #ef4444;
+}
+
+.u-btn-on {
+  color: #10b981;
+}

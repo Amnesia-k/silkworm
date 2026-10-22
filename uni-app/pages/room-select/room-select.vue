@@ -74,6 +74,7 @@ import { mpPage } from '@/utils/uni-shim.js'
 import * as data from '@/utils/data.js'
 import * as engine from '@/utils/engine.js'
 import * as nav from '@/utils/nav.js'
+import * as auth from '@/utils/auth.js'
 
 export default mpPage({
   data: {
@@ -84,6 +85,11 @@ export default mpPage({
   },
 
   onLoad(options) {
+    // 冷启动闸门：需要登录但还没有会话时，直接去登录页（gate 关闭时不拦人）
+    if (auth.needsLogin()) {
+      uni.reLaunch({ url: '/pages/login/login' })
+      return
+    }
     const from = options && options.from ? decodeURIComponent(options.from) : ''
     this.setData({ from })
     this.refresh()

@@ -5,39 +5,67 @@
 
   <barn-bar from="/pages/mine/mine" />
 
-  <!-- ===================== 用户与角色 ===================== -->
-  <view class="card" wx:if="{{role}}">
+  <!-- ===================== 账号 ===================== -->
+  <view class="card">
     <view class="card-header">
-      <view class="card-title">用户与角色</view>
-      <view class="card-more">本机演示</view>
-    </view>
-    <view class="user-row">
-      <view class="user-avatar">{{role.name}}</view>
-      <view class="user-main">
-        <view class="user-name">{{role.name}}</view>
-        <view class="user-desc">{{roleDesc}}</view>
-      </view>
-    </view>
-    <view class="divider"></view>
-    <view class="kv-row">
-      <text class="kv-label">职责范围</text>
-      <text class="kv-value">{{role.scope}}</text>
-    </view>
-    <view class="kv-row">
-      <text class="kv-label">使用终端</text>
-      <text class="kv-value">{{role.terminals}}</text>
-    </view>
-    <view class="kv-row">
-      <text class="kv-label">按职责分工人数</text>
-      <text class="kv-value">{{role.headcount}}</text>
+      <view class="card-title">账号</view>
+      <view class="card-more" bindtap="onToggleAcc">{{accOpen ? '收起' : '设置'}}</view>
     </view>
 
-    <view class="divider"></view>
-    <view class="section-title">切换角色（演示用，立即生效）</view>
-    <view class="chip-row">
-      <view class="chip {{role.key === item.key ? 'chip-on' : ''}}" wx:for="{{roleList}}" wx:key="key" wx:for-item="item" data-key="{{item.key}}" bindtap="onRole">{{item.name}}</view>
+    <view class="user-row">
+      <view class="user-avatar">{{acc.loggedIn ? acc.roleText : '未登录'}}</view>
+      <view class="user-main">
+        <view class="user-name">{{acc.loggedIn ? (acc.name || acc.username) : '演示模式'}}</view>
+        <view class="user-desc">{{acc.loggedIn ? (acc.username + ' · ' + acc.roleText) : '未登录时按演示数据运行，权限不生效'}}</view>
+      </view>
+      <view class="badge {{acc.loggedIn ? 'badge-green' : 'badge-gray'}}">{{acc.loggedIn ? '已登录' : '离线演示'}}</view>
     </view>
-    <view class="tip">角色切换只影响本机权限判定，真实权限由服务端下发。</view>
+
+    <view class="kv-row">
+      <text class="kv-label">后端地址</text>
+      <text class="kv-value mono">{{auth.baseUrl}}</text>
+    </view>
+    <view class="kv-row">
+      <text class="kv-label">启动要求登录</text>
+      <switch class="acc-switch" checked="{{auth.gate}}" color="#3d6df2" bindchange="onToggleGate" />
+    </view>
+
+    <view class="btn-row">
+      <view class="btn-ghost" wx:if="{{!acc.loggedIn}}" bindtap="onGoLogin">去登录</view>
+      <view class="btn-ghost" wx:if="{{acc.loggedIn}}" bindtap="onRefreshMe">刷新身份</view>
+      <view class="btn-ghost" wx:if="{{acc.loggedIn}}" bindtap="onLogout">退出登录</view>
+    </view>
+
+    <!-- 管理员专属：操作员账户 / 审批令牌 -->
+    <block wx:if="{{acc.isAdmin}}">
+      <view class="divider"></view>
+      <view class="section-title">管理员</view>
+      <view class="list-item" bindtap="onGoUsers">
+        <view class="list-main">
+          <view class="list-name">操作员账户</view>
+          <view class="list-meta">新增 / 改角色 / 重置密码 / 禁用</view>
+        </view>
+        <view class="list-tail"><text class="arrow">›</text></view>
+      </view>
+      <view class="list-item" bindtap="onGoTokens">
+        <view class="list-main">
+          <view class="list-name">审批令牌</view>
+          <view class="list-meta">签发给操作员执行手动控制，5 分钟单次有效</view>
+        </view>
+        <view class="list-tail"><text class="arrow">›</text></view>
+      </view>
+    </block>
+
+    <view wx:if="{{accOpen}}">
+      <view class="divider"></view>
+      <view class="section-title">演示：切换本机角色（不改后端账号）</view>
+      <view class="chip-row">
+        <view class="chip {{role.key === item.key ? 'chip-on' : ''}}" wx:for="{{roleList}}" wx:key="key" wx:for-item="item" data-key="{{item.key}}" bindtap="onRole">{{item.name}}</view>
+      </view>
+      <view class="tip">当前职责：{{roleDesc}}。真实角色以登录后后端返回的 role 为准。</view>
+    </view>
+
+    <view class="tip" wx:if="{{acc.loggedIn}}">角色：{{role.scope}}</view>
   </view>
 
   <!-- ===================== 当前蚕房 ===================== -->

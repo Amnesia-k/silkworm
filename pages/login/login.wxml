@@ -1,0 +1,50 @@
+<view class="login-page">
+  <view class="brand">
+    <view class="brand-mark">蚕</view>
+    <view class="brand-title">养蚕环境调控</view>
+    <view class="brand-sub">账号登录 · 管理员 / 操作员</view>
+  </view>
+
+  <view class="login-card">
+    <view class="field">
+      <text class="field-label">账号</text>
+      <input class="field-input" value="{{user}}" placeholder="请输入账号" placeholder-class="ph"
+             bindinput="onUserInput" cursor-spacing="24" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">密码</text>
+      <view class="pwd-wrap">
+        <input class="field-input pwd-input" password="{{!pwdShow}}" value="{{pwd}}" placeholder="请输入密码"
+               placeholder-class="ph" bindinput="onPwdInput" cursor-spacing="24"
+               confirm-type="go" bindconfirm="onLogin" />
+        <text class="pwd-eye" bindtap="onTogglePwd">{{pwdShow ? '隐藏' : '显示'}}</text>
+      </view>
+    </view>
+
+    <view class="err" wx:if="{{error}}">{{error}}</view>
+
+    <view class="btn-login {{submitting ? 'btn-busy' : ''}}" bindtap="onLogin">
+      {{submitting ? '登录中…' : '登 录'}}
+    </view>
+
+    <view class="adv">
+      <view class="adv-head" bindtap="onToggleAdv">
+        <text class="adv-title">服务器设置</text>
+        <text class="adv-arrow">{{advOpen ? '收起' : '展开'}}</text>
+      </view>
+      <view class="adv-body" wx:if="{{advOpen}}">
+        <input class="field-input" value="{{baseUrl}}" placeholder="http://10.66.66.1/api"
+               placeholder-class="ph" bindinput="onBaseInput" />
+        <view class="adv-act">
+          <text class="adv-tip">含 /api，需先连 WireGuard 隧道</text>
+          <text class="adv-save" bindtap="onSaveBase">保存</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="skip" wx:if="{{!gate}}" bindtap="onSkip">后端未就绪？跳过登录，直接进入演示模式</view>
+
+  <view class="foot">账号由后端账号库校验；管理员可签发操作令牌、管理操作员账户</view>
+</view>

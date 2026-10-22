@@ -1,0 +1,58 @@
+<view class="page-body">
+
+  <view class="card">
+    <view class="card-header">
+      <view class="card-title">操作员账户</view>
+      <view class="card-more" bindtap="onAddOpen">＋ 新增</view>
+    </view>
+    <view class="card-sub">账号、角色与密码由后端账号库维护；角色决定可执行的操作，管理员可签发审批令牌。</view>
+
+    <!-- 新增表单（内联，不用弹层） -->
+    <view class="form" wx:if="{{addOpen}}">
+      <view class="form-title">新增账号</view>
+      <view class="form-row">
+        <text class="form-label">账号</text>
+        <input class="form-input" value="{{form.username}}" data-k="username" placeholder="登录用户名" bindinput="onFormInput" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">姓名</text>
+        <input class="form-input" value="{{form.name}}" data-k="name" placeholder="选填，用于审计留痕" bindinput="onFormInput" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">初始密码</text>
+        <input class="form-input" value="{{form.password}}" data-k="password" password placeholder="至少 6 位" bindinput="onFormInput" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">角色</text>
+        <view class="chip-row">
+          <view class="chip {{form.role === item.key ? 'chip-on' : ''}}" wx:for="{{roleOptions}}" wx:key="key" wx:for-item="item" data-key="{{item.key}}" bindtap="onPickRole">{{item.name}}</view>
+        </view>
+      </view>
+      <view class="btn-row">
+        <view class="btn-primary {{busy ? 'btn-busy' : ''}}" bindtap="onCreate">确定新增</view>
+        <view class="btn-ghost" bindtap="onAddClose">取消</view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{loading}}">加载中…</view>
+    <view class="api-err" wx:if="{{error}}">{{error}}</view>
+    <view class="empty" wx:if="{{!loading && !error && !list.length}}">还没有账号，点右上角「新增」</view>
+
+    <view class="u-item" wx:for="{{list}}" wx:key="id" wx:for-item="u">
+      <view class="u-main">
+        <view class="u-name">
+          {{u.name || u.username}}
+          <text class="badge {{u.role === 'admin' ? 'badge-orange' : 'badge-blue'}}">{{u.roleText}}</text>
+          <text class="badge badge-gray" wx:if="{{u.disabled}}">已禁用</text>
+        </view>
+        <view class="u-meta">{{u.username}}<text wx:if="{{u.phone}}"> · {{u.phone}}</text></view>
+      </view>
+      <view class="u-act">
+        <text class="u-btn" data-id="{{u.id}}" bindtap="onResetPwd">重置密码</text>
+        <text class="u-btn {{u.disabled ? 'u-btn-on' : 'u-btn-off'}}" data-id="{{u.id}}" data-disabled="{{u.disabled}}" bindtap="onToggleDisabled">{{u.disabled ? '启用' : '禁用'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tip">管理员账号一般由后端初始化，前端只管理操作员与观察员；所有变更由服务端落库留痕。</view>
+</view>
